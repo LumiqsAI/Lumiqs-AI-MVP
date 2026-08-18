@@ -1,0 +1,268 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum BusinessStage {
+  IDEA
+  PRE_LAUNCH
+  MVP
+  EARLY_REVENUE
+  GROWTH
+  ESTABLISHED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum ReportType {
+  BUSINESS_ANALYSIS
+  MARKET_RESEARCH
+  COMPETITOR_ANALYSIS
+  STRATEGY
+  EXECUTION_PLAN
+  CUSTOM
+}
+
+enum ReportStatus {
+  GENERATING
+  COMPLETED
+  FAILED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum MemoryType {
+  BUSINESS_FACT
+  USER_PREFERENCE
+  DECISION
+  RECOMMENDATION
+  STRATEGIC_CONCLUSION
+  CUSTOMER_INSIGHT
+}
+
+// ─────────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(cuid()) @map("_id")
+  clerkId       String   @unique
+  email         String   @unique
+  firstName     String?
+  lastName      String?
+  avatarUrl     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  businesses    Business[]
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// BUSINESS
+// ─────────────────────────────────────────────
+
+model Business {
+  id              String        @id @default(cuid()) @map("_id")
+  userId          String
+  name            String
+  logoUrl         String?
+  website         String?
+  industry        String?
+  stage           BusinessStage @default(IDEA)
+  country         String?
+  teamSize        String?
+  revenueModel    String?
+  targetAudience  String?
+  description     String?
+  goals           String?
+  challenges      String?
+  isDeleted       Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id])
+  conversations   Conversation[]
+  reports         Report[]
+  insights        Insight[]
+  memories        BusinessMemory[]
+  competitors     Competitor[]
+
+  @@index([userId])
+  @@index([userId, isDeleted])
+  @@map("businesses")
+}
+
+// ─────────────────────────────────────────────
+// CONVERSATION
+// ─────────────────────────────────────────────
+
+model Conversation {
+  id          String    @id @default(cuid()) @map("_id")
+  businessId  String
+  userId      String
+  title       String    @default("New Conversation")
+  isDeleted   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  business    Business  @relation(fields: [businessId], references: [id])
+  messages    Message[]
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([businessId, isDeleted])
+  @@map("conversations")
+}
+
+// ─────────────────────────────────────────────
+// MESSAGE
+// ─────────────────────────────────────────────
+
+model Message {
+  id              String       @id @default(cuid()) @map("_id")
+  conversationId  String
+  role            MessageRole
+  content         String
+  metadata        Json?
+  createdAt       DateTime     @default(now())
+
+  conversation    Conversation @relation(fields: [conversationId], references: [id])
+
+  @@index([conversationId])
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+// ─────────────────────────────────────────────
+// REPORT
+// ─────────────────────────────────────────────
+
+model Report {
+  id          String       @id @default(cuid()) @map("_id")
+  businessId  String
+  userId      String
+  type        ReportType
+  status      ReportStatus @default(GENERATING)
+  title       String
+  summary     String?
+  content     Json?
+  pdfUrl      String?
+  isDeleted   Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  business    Business     @relation(fields: [businessId], references: [id])
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([businessId, type])
+  @@map("reports")
+}
+
+// ─────────────────────────────────────────────
+// INSIGHT
+// ─────────────────────────────────────────────
+
+model Insight {
+  id          String   @id @default(cuid()) @map("_id")
+  businessId  String
+  userId      String
+  title       String
+  content     String
+  source      String?
+  tags        String[]
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  business    Business @relation(fields: [businessId], references: [id])
+
+  @@index([businessId])
+  @@index([userId])
+  @@map("insights")
+}
+
+// ─────────────────────────────────────────────
+// BUSINESS MEMORY
+// ─────────────────────────────────────────────
+
+model BusinessMemory {
+  id          String     @id @default(cuid()) @map("_id")
+  businessId  String
+  type        MemoryType
+  content     String
+  importance  Int        @default(5)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  business    Business   @relation(fields: [businessId], references: [id])
+
+  @@index([businessId])
+  @@index([businessId, isActive])
+  @@index([businessId, type])
+  @@map("business_memories")
+}
+
+// ─────────────────────────────────────────────
+// COMPETITOR
+// ─────────────────────────────────────────────
+
+model Competitor {
+  id          String   @id @default(cuid()) @map("_id")
+  businessId  String
+  name        String
+  website     String?
+  analysis    Json?
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  business    Business @relation(fields: [businessId], references: [id])
+
+  @@index([businessId])
+  @@map("competitors")
+}
+
+// ─────────────────────────────────────────────
+// EXECUTION TASK
+// ─────────────────────────────────────────────
+
+model ExecutionTask {
+  id          String     @id @default(cuid()) @map("_id")
+  reportId    String
+  businessId  String
+  title       String
+  description String?
+  week        Int?
+  priority    String     @default("MEDIUM")
+  status      TaskStatus @default(TODO)
+  outcome     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([reportId])
+  @@index([businessId])
+  @@map("execution_tasks")
+}

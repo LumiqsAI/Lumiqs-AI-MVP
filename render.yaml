@@ -1,0 +1,49 @@
+services:
+  - type: web
+    name: lumiqs-ai-api
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: apps/api
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: node dist/main
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: AI_BASE_URL
+        sync: false
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_MODEL
+        sync: false
+      - key: AI_MAX_TOKENS
+        value: 4096
+      - key: AI_TEMPERATURE
+        value: "0.7"
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_WEBHOOK_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: lumiqs-assets
+      - key: CORS_ORIGIN
+        sync: false
+      - key: THROTTLE_TTL
+        value: "60"
+      - key: THROTTLE_LIMIT
+        value: "100"
+      - key: AI_THROTTLE_LIMIT
+        value: "20"

@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  --font-inter: "Inter", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-inter);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* Prose for markdown */
+.prose { color: #cbd5e1; }
+.prose h1, .prose h2, .prose h3 { color: #f1f5f9; font-weight: 600; margin-top: 1.5em; margin-bottom: 0.5em; }
+.prose h1 { font-size: 1.5rem; }
+.prose h2 { font-size: 1.25rem; }
+.prose h3 { font-size: 1.1rem; }
+.prose p { margin-bottom: 0.75em; line-height: 1.7; }
+.prose ul, .prose ol { padding-left: 1.5em; margin-bottom: 0.75em; }
+.prose li { margin-bottom: 0.25em; }
+.prose strong { color: #f1f5f9; font-weight: 600; }
+.prose code { background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 4px; font-size: 0.875em; }
+.prose blockquote { border-left: 3px solid #6366f1; padding-left: 1em; color: #94a3b8; font-style: italic; }
+.prose hr { border-color: rgba(255,255,255,0.08); margin: 1.5em 0; }
+.prose table { width: 100%; border-collapse: collapse; }
+.prose th { background: rgba(255,255,255,0.05); padding: 0.5em 0.75em; text-align: left; font-weight: 600; color: #f1f5f9; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.prose td { padding: 0.5em 0.75em; border-bottom: 1px solid rgba(255,255,255,0.05); }

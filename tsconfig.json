@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@lumiqs/types": ["packages/types/src/index.ts"],
+      "@lumiqs/validation": ["packages/validation/src/index.ts"],
+      "@lumiqs/ai": ["packages/ai/src/index.ts"],
+      "@lumiqs/database": ["packages/database/src/index.ts"],
+      "@lumiqs/config": ["packages/config/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules"]
+}

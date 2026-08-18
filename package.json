@@ -1,0 +1,35 @@
+{
+  "name": "lumiqs-ai",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "db:push": "cd apps/api && npx prisma db push",
+    "db:generate": "cd apps/api && npx prisma generate",
+    "db:seed": "cd apps/api && npx ts-node ../../packages/database/prisma/seed.ts",
+    "db:studio": "cd apps/api && npx prisma studio"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/swagger": "^11.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "turbo": "^2.0.0",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
