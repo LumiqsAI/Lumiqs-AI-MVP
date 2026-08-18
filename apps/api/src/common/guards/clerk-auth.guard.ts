@@ -39,7 +39,8 @@ export class ClerkAuthGuard implements CanActivate {
           publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
           authorizedParties: [
             'http://localhost:3000',
-            process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+            'https://lumiqs-ai-mvp-web.vercel.app',
+            ...(process.env.CORS_ORIGIN ? [process.env.CORS_ORIGIN] : []),
           ],
         },
       );
