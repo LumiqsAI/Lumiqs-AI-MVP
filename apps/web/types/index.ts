@@ -2,7 +2,7 @@ export type BusinessStage = "IDEA" | "PRE_LAUNCH" | "MVP" | "EARLY_REVENUE" | "G
 export type ReportType = "BUSINESS_ANALYSIS" | "MARKET_RESEARCH" | "COMPETITOR_ANALYSIS" | "STRATEGY" | "EXECUTION_PLAN" | "CUSTOM";
 export type ReportStatus = "GENERATING" | "COMPLETED" | "FAILED";
 export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE";
-export type MessageRole = "USER" | "ASSISTANT" | "SYSTEM";
+export type MessageRole = "user" | "assistant" | "system";
 
 export interface User {
   id: string;

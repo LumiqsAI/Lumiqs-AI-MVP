@@ -82,7 +82,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
     setLoadingMsgs(true);
     try {
       const conv = await api.get<Conversation>(`/businesses/${businessId}/conversations/${convId}`);
-      setMessages(conv.messages?.filter((m) => m.role !== "SYSTEM") || []);
+      setMessages(conv.messages?.filter((m) => m.role !== "system") || []);
     } catch {
       toast.error("Failed to load conversation");
     } finally {
@@ -102,7 +102,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
     const tempUserMsg: Message = {
       id: `temp-${Date.now()}`,
       conversationId: activeConvId || "",
-      role: "USER",
+      role: "user",
       content: message,
       createdAt: new Date().toISOString(),
     };
@@ -174,7 +174,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
       const assistantMsg: Message = {
         id: `temp-ai-${Date.now()}`,
         conversationId: newConvId || "",
-        role: "ASSISTANT",
+        role: "assistant",
         content: fullContent,
         createdAt: new Date().toISOString(),
       };
@@ -291,13 +291,13 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
                 key={msg.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={cn("group flex gap-3 max-w-3xl", msg.role === "USER" ? "ml-auto flex-row-reverse" : "")}
+                className={cn("group flex gap-3 max-w-3xl", msg.role === "user" ? "ml-auto flex-row-reverse" : "")}
               >
                 <div className={cn(
                   "w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 overflow-hidden",
-                  msg.role === "USER" ? "bg-indigo-600/30" : "bg-slate-800",
+                  msg.role === "user" ? "bg-indigo-600/30" : "bg-slate-800",
                 )}>
-                  {msg.role === "USER"
+                  {msg.role === "user"
                     ? user?.imageUrl
                       ? <img src={user.imageUrl} alt={user.fullName || "Your profile"} className="h-full w-full object-cover" />
                       : <User className="h-3.5 w-3.5 text-indigo-300" aria-label="You" />
@@ -305,19 +305,19 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
                 </div>
                 <div className={cn(
                   "flex-1 min-w-0",
-                  msg.role === "USER" ? "bg-indigo-600/15 border border-indigo-500/20 rounded-2xl rounded-tr-sm px-4 py-3" : "",
+                  msg.role === "user" ? "bg-indigo-600/15 border border-indigo-500/20 rounded-2xl rounded-tr-sm px-4 py-3" : "",
                 )}>
-                  <p className={cn("mb-1 text-xs font-medium", msg.role === "USER" ? "text-indigo-200" : "text-slate-500")}>
-                    {msg.role === "USER" ? "You" : "Lumiqs AI"}
+                  <p className={cn("mb-1 text-xs font-medium", msg.role === "user" ? "text-indigo-200" : "text-slate-500")}>
+                    {msg.role === "user" ? "You" : "Lumiqs AI"}
                   </p>
-                  {msg.role === "USER" ? (
+                  {msg.role === "user" ? (
                     <p className="text-sm text-white">{msg.content}</p>
                   ) : (
                     <div className="prose text-sm max-w-none">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                     </div>
                   )}
-                  {msg.role === "ASSISTANT" && (
+                  {msg.role === "assistant" && (
                     <div className="flex items-center gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => navigator.clipboard.writeText(msg.content)} className="p-1.5 rounded hover:bg-white/5 text-slate-600 hover:text-slate-400 transition-colors">
                         <Copy className="h-3.5 w-3.5" />
