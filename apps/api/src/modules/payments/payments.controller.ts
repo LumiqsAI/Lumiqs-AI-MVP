@@ -1,8 +1,9 @@
 import {
-  Controller, Post, Body, UseGuards, Req, RawBodyRequest,
+  Controller, Post, Body, UseGuards, Req,
   Headers, HttpCode, Get,
 } from '@nestjs/common';
-import { Request } from 'express';
+import type { RawBodyRequest } from '@nestjs/common';
+import type { Request } from 'express';
 import { PaymentsService } from './payments.service';
 import { CreateOrderDto, VerifyPaymentDto } from './payments.dto';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
