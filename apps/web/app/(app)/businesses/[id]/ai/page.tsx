@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
-  Send, Plus, Bot, User, Copy, RefreshCw, Bookmark, Trash2, MessageSquare,
+  Send, Plus, Bot, User, Copy, Bookmark, Trash2, Pencil, Check, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
@@ -43,6 +43,8 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
   const [streamingContent, setStreamingContent] = useState("");
   const [loadingConvs, setLoadingConvs] = useState(true);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
+  const [editingConvId, setEditingConvId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -213,6 +215,44 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
     setMessages([]);
   }
 
+  function startEditingConversation(conversation: Conversation) {
+    setEditingConvId(conversation.id);
+    setEditingTitle(conversation.title);
+  }
+
+  async function saveConversationTitle(conversationId: string) {
+    const title = editingTitle.trim();
+    if (!title) {
+      toast.error("A chat title is required");
+      return;
+    }
+    try {
+      const updated = await api.patch<Conversation>(`/businesses/${businessId}/conversations/${conversationId}/title`, { title });
+      setConversations((current) => current.map((conversation) => conversation.id === conversationId ? { ...conversation, title: updated.title } : conversation));
+      setEditingConvId(null);
+      toast.success("Chat renamed");
+    } catch {
+      toast.error("Failed to rename chat");
+    }
+  }
+
+  async function deleteConversation(conversationId: string) {
+    if (streaming && conversationId === activeConvId) {
+      toast.error("Wait for the current response to finish before deleting this chat");
+      return;
+    }
+    if (!window.confirm("Delete this chat? This cannot be undone from the app.")) return;
+
+    try {
+      await api.delete(`/businesses/${businessId}/conversations/${conversationId}`);
+      setConversations((current) => current.filter((conversation) => conversation.id !== conversationId));
+      if (activeConvId === conversationId) newConversation();
+      toast.success("Chat deleted");
+    } catch {
+      toast.error("Failed to delete chat");
+    }
+  }
+
   return (
     <div className="flex h-full">
       {/* Conversation sidebar */}
@@ -229,17 +269,50 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
             <p className="text-xs text-slate-500 text-center py-4">No conversations yet</p>
           ) : (
             conversations.map((c) => (
-              <button
+              <div
                 key={c.id}
-                onClick={() => setActiveConvId(c.id)}
                 className={cn(
-                  "w-full text-left px-3 py-2 rounded-lg text-xs transition-colors",
+                  "group relative rounded-lg text-xs transition-colors",
                   activeConvId === c.id ? "bg-indigo-600/20 text-indigo-300" : "text-slate-400 hover:text-white hover:bg-white/5",
                 )}
               >
-                <p className="font-medium line-clamp-1">{c.title}</p>
-                <p className="text-slate-600 mt-0.5">{formatRelativeTime(c.updatedAt)}</p>
-              </button>
+                {editingConvId === c.id ? (
+                  <div className="flex items-center gap-1 p-2">
+                    <input
+                      autoFocus
+                      value={editingTitle}
+                      onChange={(event) => setEditingTitle(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") void saveConversationTitle(c.id);
+                        if (event.key === "Escape") setEditingConvId(null);
+                      }}
+                      aria-label="Chat title"
+                      className="min-w-0 flex-1 rounded border border-indigo-400/50 bg-slate-950 px-2 py-1 text-xs text-white outline-none"
+                    />
+                    <button onClick={() => void saveConversationTitle(c.id)} aria-label="Save chat title" className="rounded p-1 text-indigo-300 hover:bg-white/10">
+                      <Check className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => setEditingConvId(null)} aria-label="Cancel renaming chat" className="rounded p-1 text-slate-400 hover:bg-white/10">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button onClick={() => setActiveConvId(c.id)} className="w-full px-3 py-2 pr-12 text-left">
+                      <p className="font-medium line-clamp-1">{c.title}</p>
+                      <p className="text-slate-600 mt-0.5">{formatRelativeTime(c.updatedAt)}</p>
+                    </button>
+                    <div className="absolute right-1 top-1 flex opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                      <button onClick={() => startEditingConversation(c)} aria-label={`Rename ${c.title}`} className="rounded p-1 text-slate-400 hover:bg-white/10 hover:text-white">
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                      <button onClick={() => void deleteConversation(c.id)} aria-label={`Delete ${c.title}`} className="rounded p-1 text-slate-400 hover:bg-red-500/15 hover:text-red-300">
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             ))
           )}
         </div>
