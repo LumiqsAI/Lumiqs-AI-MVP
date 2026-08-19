@@ -12,8 +12,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = window.localStorage.getItem("lumiqs-theme") as Theme | null;
-    const preferred = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-    const next = stored === "light" || stored === "dark" ? stored : preferred;
+    const next = stored === "light" || stored === "dark" ? stored : "dark";
     setTheme(next);
     document.documentElement.dataset.theme = next;
   }, []);

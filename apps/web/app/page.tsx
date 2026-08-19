@@ -33,7 +33,7 @@ export default async function HomePage() {
             style={{ background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)", filter: "blur(80px)" }} />
 
           <div className="relative mx-auto grid max-w-7xl items-center gap-16 px-5 pb-20 pt-20 lg:grid-cols-[.95fr_1.05fr] lg:px-8 lg:pb-28 lg:pt-28">
-            <div>
+            <div className="hero-copy">
               <div
                 className="mb-7 inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium uppercase tracking-[.18em] rounded-full"
                 style={{
@@ -93,7 +93,7 @@ export default async function HomePage() {
             </div>
 
             {/* Hero card */}
-            <div className="relative">
+            <div className="hero-preview relative">
               <div className="absolute -inset-6 rounded-[2rem] blur-3xl" style={{ background: "var(--accent-glow)" }} />
               <div
                 className="relative overflow-hidden rounded-2xl shadow-2xl"
@@ -186,7 +186,8 @@ export default async function HomePage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="group glass-card rounded-xl p-6 transition-all hover:-translate-y-1 hover:border-indigo-400/30"
+                className="feature-card group glass-card rounded-2xl p-6 hover:-translate-y-1 hover:border-indigo-400/30"
+                style={{ animationDelay: `${features.indexOf(feature) * 75}ms` }}
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "rgba(99,102,241,.15)" }}>
                   <feature.icon className="h-5 w-5 text-indigo-400" />

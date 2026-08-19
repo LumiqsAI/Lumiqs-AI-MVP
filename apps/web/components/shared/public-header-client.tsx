@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export function PublicHeaderClient({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
   return (
     <header
-      className="sticky top-0 z-40"
+      className="sticky top-0 z-40 public-nav"
       style={{
         background: "var(--nav-bg)",
         borderBottom: "1px solid var(--line)",
@@ -28,7 +28,7 @@ export function PublicHeaderClient({ isAuthenticated = false }: { isAuthenticate
             <Link
               key={href}
               href={href}
-              className="transition-colors hover:text-indigo-400"
+            className="nav-link transition-colors hover:text-indigo-300"
               style={{ color: "var(--muted-fg)" }}
             >
               {label}
