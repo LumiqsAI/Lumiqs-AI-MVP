@@ -19,7 +19,7 @@ export class OpenAIService {
       timeout: 60000,
       maxRetries: 2,
     });
-    this.model = process.env.AI_MODEL || 'llama-3.1-8b-instant';
+    this.model = process.env.AI_MODEL || 'openai/gpt-oss-120b';
     this.maxTokens = parseInt(process.env.AI_MAX_TOKENS || '4096', 10);
     this.temperature = parseFloat(process.env.AI_TEMPERATURE || '0.7');
   }

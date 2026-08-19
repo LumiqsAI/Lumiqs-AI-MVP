@@ -40,7 +40,7 @@
 | `MONGODB_DB_NAME` | `lumiqs_ai` |
 | `AI_BASE_URL` | `https://api.groq.com/openai/v1` *(or OpenAI)* |
 | `AI_API_KEY` | *(your Groq or OpenAI key)* |
-| `AI_MODEL` | `llama-3.1-8b-instant` for Groq *(or `gpt-4o-mini` for OpenAI)* |
+| `AI_MODEL` | `openai/gpt-oss-120b` for Groq *(or `gpt-4o-mini` for OpenAI)* |
 | `AI_MAX_TOKENS` | `4096` |
 | `AI_TEMPERATURE` | `0.7` |
 | `CLERK_SECRET_KEY` | *(from Clerk dashboard)* |

@@ -22,7 +22,7 @@ services:
       - key: AI_API_KEY
         sync: false
       - key: AI_MODEL
-        value: llama-3.1-8b-instant
+        value: openai/gpt-oss-120b
       - key: AI_MAX_TOKENS
         value: 4096
       - key: AI_TEMPERATURE
