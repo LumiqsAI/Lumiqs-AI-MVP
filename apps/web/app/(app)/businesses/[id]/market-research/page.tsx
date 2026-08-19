@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/loading";
 import { useApiClient } from "@/lib/api/client";
 import { Report } from "@/types";
 import Link from "next/link";
+import { ReportHistory } from "@/components/reports/report-history";
 
 interface MarketContent {
   industryOverview?: string;
@@ -47,6 +48,11 @@ export default function MarketResearchPage({ params }: { params: Promise<{ id: s
     }
   }
 
+  async function selectReport(reportId: string) {
+    const selected = await api.get<Report>(`/reports/${reportId}`);
+    setReport(selected);
+  }
+
   const c = report?.content as MarketContent | undefined;
 
   return (
@@ -57,6 +63,7 @@ export default function MarketResearchPage({ params }: { params: Promise<{ id: s
           <p className="text-slate-400 mt-1">Industry overview, customer personas, trends, and opportunities.</p>
         </div>
         <div className="flex gap-2">
+          <ReportHistory businessId={businessId} type="MARKET_RESEARCH" activeReportId={report?.id} onSelect={selectReport} />
           {report && <Link href={`/reports/${report.id}`}><Button variant="outline">View Report</Button></Link>}
           <Button onClick={generate} loading={loading}><Globe className="h-4 w-4" />{report ? "Regenerate" : "Generate Research"}</Button>
         </div>

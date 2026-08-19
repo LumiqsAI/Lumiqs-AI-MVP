@@ -8,7 +8,8 @@ import { BusinessContextService } from '../ai/services/business-context.service'
 import { OpenAIService } from '../ai/services/openai.service';
 import { AnalyzeCompetitorDto } from './competitors.dto';
 
-const COMPETITOR_PROMPT = `You are a competitive intelligence analyst. Analyze the provided competitor in the context of the client's business.
+const COMPETITOR_PROMPT = `You are a competitive intelligence analyst. Analyze the provided competitor in the context of the client's business, goals, current constraints, saved insights, prior conclusions, and known competitors.
+Do not present unsupported competitor claims as facts. Clearly frame unknowns as assumptions or validation questions. Focus on how this business can win, not on a generic company profile.
 
 Return JSON with this exact structure:
 {
@@ -28,7 +29,7 @@ Return JSON with this exact structure:
   },
   "competitiveAdvantages": ["string"],
   "threats": ["string"],
-  "recommendations": ["string"]
+  "recommendations": ["specific action for this business with owner role, time horizon, success metric, and validation step"]
 }`;
 
 @Injectable()
@@ -49,7 +50,7 @@ export class CompetitorsService {
 Our business context:
 ${contextBlock}
 
-Provide competitive intelligence and strategic recommendations.`;
+Provide deep competitive intelligence, identify the relevant alternatives, and recommend a focused response for this business. Reuse known context where relevant and note any evidence gaps.`;
 
     const report = await this.reportModel.create({
       businessId: new Types.ObjectId(businessId),

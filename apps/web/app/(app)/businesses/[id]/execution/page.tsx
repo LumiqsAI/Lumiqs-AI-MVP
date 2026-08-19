@@ -12,6 +12,7 @@ import { useApiClient } from "@/lib/api/client";
 import { Report, ExecutionTask } from "@/types";
 import { PRIORITY_COLORS } from "@/lib/utils";
 import Link from "next/link";
+import { ReportHistory } from "@/components/reports/report-history";
 
 interface WeekData {
   week: number;
@@ -63,6 +64,13 @@ export default function ExecutionPage({ params }: { params: Promise<{ id: string
     }
   }
 
+  async function selectReport(reportId: string) {
+    const selected = await api.get<Report>(`/reports/${reportId}`);
+    const selectedTasks = await api.get<ExecutionTask[]>(`/businesses/${businessId}/execution-plan/${reportId}/tasks`);
+    setReport(selected);
+    setTasks(selectedTasks);
+  }
+
   const c = report?.content as ExecutionContent | undefined;
   const weeks = [1, 2, 3, 4];
 
@@ -80,6 +88,7 @@ export default function ExecutionPage({ params }: { params: Promise<{ id: string
           <p className="text-slate-400 mt-1">Week-by-week roadmap with tasks and success metrics.</p>
         </div>
         <div className="flex gap-2">
+          <ReportHistory businessId={businessId} type="EXECUTION" activeReportId={report?.id} onSelect={selectReport} />
           {report && <Link href={`/reports/${report.id}`}><Button variant="outline">View Report</Button></Link>}
           <Button onClick={generate} loading={loading}><Rocket className="h-4 w-4" />{report ? "Regenerate" : "Generate Plan"}</Button>
         </div>

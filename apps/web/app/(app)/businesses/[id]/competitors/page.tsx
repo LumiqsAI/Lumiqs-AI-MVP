@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/loading";
 import { useApiClient } from "@/lib/api/client";
 import { Report } from "@/types";
 import Link from "next/link";
+import { ReportHistory } from "@/components/reports/report-history";
 
 interface CompetitorContent {
   overview?: string;
@@ -55,13 +56,23 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
     }
   }
 
+  async function selectReport(reportId: string) {
+    const selected = await api.get<Report>(`/reports/${reportId}`);
+    setReport(selected);
+    setName(selected.title.replace(/^Competitor Analysis:\s*/, ""));
+    setWebsite("");
+  }
+
   const c = report?.content as CompetitorContent | undefined;
 
   return (
     <div className="p-6 lg:p-8 max-w-5xl mx-auto">
-      <div className="mb-8">
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div className="flex-1">
         <h1 className="text-2xl font-semibold text-white">Competitor Analysis</h1>
         <p className="text-slate-400 mt-1">Analyze competitors and identify strategic advantages.</p>
+        </div>
+        <ReportHistory businessId={businessId} type="COMPETITOR_ANALYSIS" activeReportId={report?.id} onSelect={selectReport} />
       </div>
 
       <Card className="mb-6">

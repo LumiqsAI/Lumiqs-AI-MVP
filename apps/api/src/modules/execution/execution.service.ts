@@ -27,7 +27,7 @@ Return JSON with this exact structure:
           "description": "string",
           "priority": "HIGH|MEDIUM|LOW",
           "outcome": "string",
-          "dependencies": ["string"]
+          "dependencies": ["specific dependency or validation needed before this task can succeed"]
         }
       ]
     }
@@ -59,7 +59,7 @@ export class ExecutionService {
       const content = await this.orchestrator.generateStructured(
         businessId,
         EXECUTION_PROMPT,
-        'Create a detailed 4-week execution plan with specific tasks, priorities, and success metrics.',
+        'Create a deep but focused four-week execution plan based on the full business context and prior report conclusions. Sequence only the highest-leverage work, make owners and dependencies explicit, and attach a measurable completion signal to every task.',
       ) as Record<string, unknown>;
 
       const weeks = (content.weeks as Array<{

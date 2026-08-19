@@ -13,20 +13,20 @@ Return JSON with this exact structure:
 {
   "executiveSummary": "string",
   "currentSituation": "string",
-  "strengths": ["string"],
-  "weaknesses": ["string"],
-  "opportunities": ["string"],
-  "risks": ["string"],
+  "strengths": ["specific evidence-based strength"],
+  "weaknesses": ["specific constraint or gap"],
+  "opportunities": ["specific opportunity linked to business goals"],
+  "risks": ["specific risk with an early warning signal"],
   "recommendations": [
     {
       "recommendation": "string",
       "reason": "string",
       "priority": "HIGH|MEDIUM|LOW",
       "expectedImpact": "string",
-      "implementationNotes": "string"
+      "implementationNotes": "first steps, owner role, 30/60/90-day horizon, metric, dependency, and validation needed"
     }
   ],
-  "priorityActions": ["string"]
+  "priorityActions": ["sequenced action including owner role, deadline, and success metric"]
 }`;
 
 @Injectable()
@@ -53,7 +53,7 @@ export class AnalysisService {
       const content = await this.orchestrator.generateStructured(
         businessId,
         ANALYSIS_SYSTEM_PROMPT,
-        'Perform a comprehensive business analysis for this company. Be specific and actionable.',
+        'Perform a deep, decision-grade business analysis. Use all available business context and previous learnings. Surface the three most important decisions, evidence gaps, trade-offs, and a sequenced action plan.',
       );
 
       return this.reportModel.findByIdAndUpdate(

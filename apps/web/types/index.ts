@@ -1,5 +1,5 @@
 export type BusinessStage = "IDEA" | "PRE_LAUNCH" | "MVP" | "EARLY_REVENUE" | "GROWTH" | "ESTABLISHED";
-export type ReportType = "BUSINESS_ANALYSIS" | "MARKET_RESEARCH" | "COMPETITOR_ANALYSIS" | "STRATEGY" | "EXECUTION_PLAN" | "CUSTOM";
+export type ReportType = "BUSINESS_ANALYSIS" | "MARKET_RESEARCH" | "COMPETITOR_ANALYSIS" | "STRATEGY" | "EXECUTION" | "CUSTOM";
 export type ReportStatus = "GENERATING" | "COMPLETED" | "FAILED";
 export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE";
 export type MessageRole = "user" | "assistant" | "system";

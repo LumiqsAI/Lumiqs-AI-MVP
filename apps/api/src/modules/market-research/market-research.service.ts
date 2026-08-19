@@ -26,7 +26,7 @@ Return JSON with this exact structure:
   "trends": ["string"],
   "opportunities": ["string"],
   "risks": ["string"],
-  "recommendations": ["string"]
+  "recommendations": ["specific recommendation with target segment, owner role, time horizon, metric, dependency, and validation step"]
 }`;
 
 @Injectable()
@@ -51,7 +51,7 @@ export class MarketResearchService {
       const content = await this.orchestrator.generateStructured(
         businessId,
         MARKET_RESEARCH_PROMPT,
-        'Conduct comprehensive market research for this business. Focus on actionable insights.',
+        'Conduct deep market research anchored in this business context. Prioritize the most relevant customer segments, jobs-to-be-done, buying triggers, alternatives, route-to-market choices, evidence gaps, and experiments the team can run next.',
       );
 
       return this.reportModel.findByIdAndUpdate(

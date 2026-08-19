@@ -12,6 +12,7 @@ import { useApiClient } from "@/lib/api/client";
 import { Report } from "@/types";
 import { PRIORITY_COLORS } from "@/lib/utils";
 import Link from "next/link";
+import { ReportHistory } from "@/components/reports/report-history";
 
 interface StrategyItem {
   recommendation: string;
@@ -62,6 +63,11 @@ export default function StrategyPage({ params }: { params: Promise<{ id: string 
     }
   }
 
+  async function selectReport(reportId: string) {
+    const selected = await api.get<Report>(`/reports/${reportId}`);
+    setReport(selected);
+  }
+
   const c = report?.content as StrategyContent | undefined;
 
   return (
@@ -72,6 +78,7 @@ export default function StrategyPage({ params }: { params: Promise<{ id: string 
           <p className="text-slate-400 mt-1">Revenue, pricing, marketing, sales, and growth strategies.</p>
         </div>
         <div className="flex gap-2">
+          <ReportHistory businessId={businessId} type="STRATEGY" activeReportId={report?.id} onSelect={selectReport} />
           {report && <Link href={`/reports/${report.id}`}><Button variant="outline">View Report</Button></Link>}
           <Button onClick={generate} loading={loading}><Lightbulb className="h-4 w-4" />{report ? "Regenerate" : "Generate Strategy"}</Button>
         </div>

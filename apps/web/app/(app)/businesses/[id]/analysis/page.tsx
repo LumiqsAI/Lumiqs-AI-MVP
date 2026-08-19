@@ -12,6 +12,7 @@ import { useApiClient } from "@/lib/api/client";
 import { Report } from "@/types";
 import { PRIORITY_COLORS } from "@/lib/utils";
 import Link from "next/link";
+import { ReportHistory } from "@/components/reports/report-history";
 
 interface AnalysisContent {
   executiveSummary?: string;
@@ -49,6 +50,11 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
     }
   }
 
+  async function selectReport(reportId: string) {
+    const selected = await api.get<Report>(`/reports/${reportId}`);
+    setReport(selected);
+  }
+
   const content = report?.content as AnalysisContent | undefined;
 
   return (
@@ -59,6 +65,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
           <p className="text-slate-400 mt-1">AI-powered SWOT analysis and strategic recommendations.</p>
         </div>
         <div className="flex gap-2">
+          <ReportHistory businessId={businessId} type="BUSINESS_ANALYSIS" activeReportId={report?.id} onSelect={selectReport} />
           {report && (
             <Link href={`/reports/${report.id}`}>
               <Button variant="outline">View Report</Button>

@@ -18,7 +18,7 @@ Return JSON with this exact structure:
     "reason": "string",
     "priority": "HIGH|MEDIUM|LOW",
     "expectedImpact": "string",
-    "implementationNotes": "string"
+    "implementationNotes": "owner role, 30/60/90-day actions, KPI, dependency, risk, and validation needed"
   },
   "pricingStrategy": {
     "recommendation": "string",
@@ -72,7 +72,7 @@ export class StrategyService {
       const content = await this.orchestrator.generateStructured(
         businessId,
         STRATEGY_PROMPT,
-        'Generate a comprehensive business strategy covering revenue, pricing, marketing, sales, and growth.',
+        'Generate a deep, internally consistent strategy from the complete business context. Make explicit choices and trade-offs across revenue, pricing, marketing, sales, and growth; prioritize the next 90 days for the current business stage and resources.',
       );
 
       return this.reportModel.findByIdAndUpdate(
