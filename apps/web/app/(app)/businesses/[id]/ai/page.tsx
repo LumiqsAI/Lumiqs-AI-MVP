@@ -100,7 +100,6 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
     setStreaming(true);
     setStreamingContent("");
 
-    // Optimistically add user message
     const tempUserMsg: Message = {
       id: `temp-${Date.now()}`,
       conversationId: activeConvId || "",
@@ -114,10 +113,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
       const token = await getToken();
       const res = await fetch(`${API_URL}/businesses/${businessId}/ai/chat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ message, conversationId: activeConvId }),
       });
 
@@ -140,13 +136,9 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
           if (!line.startsWith("data: ")) continue;
           try {
             const data = JSON.parse(line.slice(6));
-            if (data.delta) {
-              fullContent += data.delta;
-              setStreamingContent(fullContent);
-            }
+            if (data.delta) { fullContent += data.delta; setStreamingContent(fullContent); }
             if (data.error) streamError = data.error;
             if (data.done) {
-              // Reload conversations to get new one
               const convData = await api.get<{ items: Conversation[] }>(`/businesses/${businessId}/conversations`);
               setConversations(convData.items);
               if (!activeConvId && convData.items[0]) {
@@ -162,17 +154,13 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
         try {
           const data = JSON.parse(pending.slice(6));
           if (data.error) streamError = data.error;
-          if (data.delta) {
-            fullContent += data.delta;
-            setStreamingContent(fullContent);
-          }
-        } catch { /* ignore an incomplete terminal event */ }
+          if (data.delta) { fullContent += data.delta; setStreamingContent(fullContent); }
+        } catch { /* ignore */ }
       }
 
       if (streamError) throw new Error(streamError);
       if (!fullContent.trim()) throw new Error("The AI provider returned an empty response. Please try again.");
 
-      // Add assistant message to state
       const assistantMsg: Message = {
         id: `temp-ai-${Date.now()}`,
         conversationId: newConvId || "",
@@ -191,10 +179,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
   }, [input, streaming, activeConvId, businessId, getToken, api]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   }
 
   async function saveInsight(content: string) {
@@ -210,10 +195,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
     }
   }
 
-  function newConversation() {
-    setActiveConvId(null);
-    setMessages([]);
-  }
+  function newConversation() { setActiveConvId(null); setMessages([]); }
 
   function startEditingConversation(conversation: Conversation) {
     setEditingConvId(conversation.id);
@@ -222,13 +204,10 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
 
   async function saveConversationTitle(conversationId: string) {
     const title = editingTitle.trim();
-    if (!title) {
-      toast.error("A chat title is required");
-      return;
-    }
+    if (!title) { toast.error("A chat title is required"); return; }
     try {
       const updated = await api.patch<Conversation>(`/businesses/${businessId}/conversations/${conversationId}/title`, { title });
-      setConversations((current) => current.map((conversation) => conversation.id === conversationId ? { ...conversation, title: updated.title } : conversation));
+      setConversations((current) => current.map((c) => c.id === conversationId ? { ...c, title: updated.title } : c));
       setEditingConvId(null);
       toast.success("Chat renamed");
     } catch {
@@ -242,10 +221,9 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
       return;
     }
     if (!window.confirm("Delete this chat? This cannot be undone from the app.")) return;
-
     try {
       await api.delete(`/businesses/${businessId}/conversations/${conversationId}`);
-      setConversations((current) => current.filter((conversation) => conversation.id !== conversationId));
+      setConversations((current) => current.filter((c) => c.id !== conversationId));
       if (activeConvId === conversationId) newConversation();
       toast.success("Chat deleted");
     } catch {
@@ -254,59 +232,97 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
   }
 
   return (
-    <div className="flex h-full">
-      {/* Conversation sidebar */}
-      <div className="hidden md:flex flex-col w-56 border-r border-white/8 bg-slate-950/50">
-        <div className="p-3 border-b border-white/8">
+    <div className="flex h-full" style={{ background: "var(--page-bg)" }}>
+      {/* ── Conversation sidebar ── */}
+      <div
+        className="hidden md:flex flex-col w-56 flex-shrink-0"
+        style={{ borderRight: "1px solid var(--line)", background: "var(--sidebar-bg)" }}
+      >
+        <div className="p-3" style={{ borderBottom: "1px solid var(--line)" }}>
           <Button variant="outline" size="sm" className="w-full" onClick={newConversation}>
             <Plus className="h-3.5 w-3.5" /> New Chat
           </Button>
         </div>
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
           {loadingConvs ? (
-            <div className="flex justify-center py-4"><Spinner size="sm" /></div>
+            <div className="flex justify-center py-6"><Spinner size="sm" /></div>
           ) : conversations.length === 0 ? (
-            <p className="text-xs text-slate-500 text-center py-4">No conversations yet</p>
+            <p className="text-xs text-center py-6" style={{ color: "var(--subtle-fg)" }}>No conversations yet</p>
           ) : (
             conversations.map((c) => (
               <div
                 key={c.id}
-                className={cn(
-                  "group relative rounded-lg text-xs transition-colors",
-                  activeConvId === c.id ? "bg-indigo-600/20 text-indigo-300" : "text-slate-400 hover:text-white hover:bg-white/5",
-                )}
+                className="group relative rounded-lg text-xs transition-colors"
+                style={activeConvId === c.id
+                  ? { background: "var(--nav-active-bg)", color: "var(--nav-active-fg)" }
+                  : { color: "var(--muted-fg)" }
+                }
               >
                 {editingConvId === c.id ? (
                   <div className="flex items-center gap-1 p-2">
                     <input
                       autoFocus
                       value={editingTitle}
-                      onChange={(event) => setEditingTitle(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") void saveConversationTitle(c.id);
-                        if (event.key === "Escape") setEditingConvId(null);
+                      onChange={(e) => setEditingTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") void saveConversationTitle(c.id);
+                        if (e.key === "Escape") setEditingConvId(null);
                       }}
                       aria-label="Chat title"
-                      className="min-w-0 flex-1 rounded border border-indigo-400/50 bg-slate-950 px-2 py-1 text-xs text-white outline-none"
+                      className="min-w-0 flex-1 rounded px-2 py-1 text-xs outline-none"
+                      style={{
+                        border: "1px solid var(--accent)",
+                        background: "var(--surface-raised)",
+                        color: "var(--page-fg)",
+                      }}
                     />
-                    <button onClick={() => void saveConversationTitle(c.id)} aria-label="Save chat title" className="rounded p-1 text-indigo-300 hover:bg-white/10">
+                    <button onClick={() => void saveConversationTitle(c.id)} aria-label="Save chat title"
+                      className="rounded p-1 transition-colors"
+                      style={{ color: "var(--accent)" }}
+                      onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)"}
+                      onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                    >
                       <Check className="h-3.5 w-3.5" />
                     </button>
-                    <button onClick={() => setEditingConvId(null)} aria-label="Cancel renaming chat" className="rounded p-1 text-slate-400 hover:bg-white/10">
+                    <button onClick={() => setEditingConvId(null)} aria-label="Cancel renaming chat"
+                      className="rounded p-1 transition-colors"
+                      style={{ color: "var(--muted-fg)" }}
+                      onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)"}
+                      onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                    >
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 ) : (
                   <>
-                    <button onClick={() => setActiveConvId(c.id)} className="w-full px-3 py-2 pr-12 text-left">
+                    <button
+                      onClick={() => setActiveConvId(c.id)}
+                      className="w-full px-3 py-2.5 pr-12 text-left transition-colors"
+                      onMouseEnter={(e) => {
+                        if (activeConvId !== c.id) (e.currentTarget as HTMLElement).style.color = "var(--page-fg)";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (activeConvId !== c.id) (e.currentTarget as HTMLElement).style.color = "var(--muted-fg)";
+                      }}
+                    >
                       <p className="font-medium line-clamp-1">{c.title}</p>
-                      <p className="text-slate-600 mt-0.5">{formatRelativeTime(c.updatedAt)}</p>
+                      <p className="mt-0.5" style={{ color: "var(--subtle-fg)" }}>{formatRelativeTime(c.updatedAt)}</p>
                     </button>
                     <div className="absolute right-1 top-1 flex opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-                      <button onClick={() => startEditingConversation(c)} aria-label={`Rename ${c.title}`} className="rounded p-1 text-slate-400 hover:bg-white/10 hover:text-white">
+                      <button onClick={() => startEditingConversation(c)} aria-label={`Rename ${c.title}`}
+                        className="rounded p-1 transition-colors"
+                        style={{ color: "var(--muted-fg)" }}
+                        onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)"}
+                        onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                      >
                         <Pencil className="h-3 w-3" />
                       </button>
-                      <button onClick={() => void deleteConversation(c.id)} aria-label={`Delete ${c.title}`} className="rounded p-1 text-slate-400 hover:bg-red-500/15 hover:text-red-300">
+                      <button onClick={() => void deleteConversation(c.id)} aria-label={`Delete ${c.title}`}
+                        className="rounded p-1 transition-colors"
+                        style={{ color: "var(--muted-fg)" }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.08)"; (e.currentTarget as HTMLElement).style.color = "#DC2626"; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--muted-fg)"; }}
+                      >
                         <Trash2 className="h-3 w-3" />
                       </button>
                     </div>
@@ -318,36 +334,60 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
         </div>
       </div>
 
-      {/* Main chat */}
+      {/* ── Main chat area ── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="border-b border-white/8 px-6 py-4 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600/20 flex items-center justify-center overflow-hidden">
-            <img src="/logo.png" alt="Lumiqs AI" className="w-6 h-6 object-contain" />
+        <div
+          className="px-6 py-4 flex items-center gap-3 flex-shrink-0"
+          style={{ borderBottom: "1px solid var(--line)", background: "var(--surface)" }}
+        >
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+            style={{ background: "var(--accent-subtle)", border: "1px solid var(--accent-glow)" }}
+          >
+            <img src="/logo.png" alt="Lumiqs AI" className="w-5 h-5 object-contain" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-white">AI Business Consultant</h2>
-            <p className="text-xs text-slate-500">Business context and decision playbook loaded</p>
+            <h2 className="text-sm font-semibold" style={{ color: "var(--page-fg)" }}>AI Business Consultant</h2>
+            <p className="text-xs" style={{ color: "var(--muted-fg)" }}>Business context and decision playbook loaded</p>
           </div>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8">
           {messages.length === 0 && !streaming && (
             <div className="max-w-2xl mx-auto">
-              <div className="text-center mb-8">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-600/20 flex items-center justify-center mx-auto mb-4 overflow-hidden">
-                  <img src="/logo.png" alt="Lumiqs AI" className="w-10 h-10 object-contain" />
+              <div className="text-center mb-10">
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 overflow-hidden"
+                  style={{ background: "var(--accent-subtle)", border: "1px solid var(--accent-glow)" }}
+                >
+                  <img src="/logo.png" alt="Lumiqs AI" className="w-9 h-9 object-contain" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Your AI Business Consultant</h3>
-                <p className="text-sm text-slate-400">Ask me anything about your business. I have full context about your company, goals, and challenges.</p>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--page-fg)", letterSpacing: "-0.02em" }}>
+                  Your AI Business Consultant
+                </h3>
+                <p className="text-sm leading-6 max-w-sm mx-auto" style={{ color: "var(--muted-fg)" }}>
+                  Ask me anything about your business. I have full context about your company, goals, and challenges.
+                </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {SUGGESTED_PROMPTS.map((p) => (
                   <button
                     key={p}
                     onClick={() => sendMessage(p)}
-                    className="text-left p-3 rounded-lg border border-white/8 hover:border-indigo-500/30 hover:bg-indigo-600/5 text-sm text-slate-400 hover:text-white transition-all"
+                    className="text-left p-3.5 rounded-xl text-sm transition-all"
+                    style={{ border: "1px solid var(--line)", background: "var(--surface)", color: "var(--muted-fg)" }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(79,70,229,0.25)";
+                      (e.currentTarget as HTMLElement).style.background = "var(--accent-subtle)";
+                      (e.currentTarget as HTMLElement).style.color = "var(--page-fg)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--line)";
+                      (e.currentTarget as HTMLElement).style.background = "var(--surface)";
+                      (e.currentTarget as HTMLElement).style.color = "var(--muted-fg)";
+                    }}
                   >
                     {p}
                   </button>
@@ -364,69 +404,114 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
                 key={msg.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={cn("group flex gap-3 max-w-3xl", msg.role === "user" ? "ml-auto flex-row-reverse" : "")}
+                transition={{ duration: 0.2 }}
+                className={cn("group", msg.role === "user" ? "flex justify-end" : "max-w-3xl")}
               >
-                <div className={cn(
-                  "w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 overflow-hidden",
-                  msg.role === "user" ? "bg-indigo-600/30" : "bg-slate-800",
-                )}>
-                  {msg.role === "user"
-                    ? user?.imageUrl
-                      ? <img src={user.imageUrl} alt={user.fullName || "Your profile"} className="h-full w-full object-cover" />
-                      : <User className="h-3.5 w-3.5 text-indigo-300" aria-label="You" />
-                    : <Bot className="h-4 w-4 text-indigo-300" aria-label="Lumiqs AI" />}
-                </div>
-                <div className={cn(
-                  "flex-1 min-w-0",
-                  msg.role === "user" ? "bg-indigo-600/15 border border-indigo-500/20 rounded-2xl rounded-tr-sm px-4 py-3" : "",
-                )}>
-                  <p className={cn("mb-1 text-xs font-medium", msg.role === "user" ? "text-indigo-200" : "text-slate-500")}>
-                    {msg.role === "user" ? "You" : "Lumiqs AI"}
-                  </p>
-                  {msg.role === "user" ? (
-                    <p className="text-sm text-white">{msg.content}</p>
-                  ) : (
-                    <div className="prose text-sm max-w-none">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                {msg.role === "user" ? (
+                  <div className="max-w-xl">
+                    <div className="flex items-center justify-end gap-2 mb-1.5">
+                      <span className="text-xs font-medium" style={{ color: "var(--muted-fg)" }}>You</span>
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+                        style={{ background: "var(--accent-subtle)" }}
+                      >
+                        {user?.imageUrl
+                          ? <img src={user.imageUrl} alt={user.fullName || "You"} className="h-full w-full object-cover" />
+                          : <User className="h-3 w-3" style={{ color: "var(--accent)" }} />
+                        }
+                      </div>
                     </div>
-                  )}
-                  {msg.role === "assistant" && (
-                    <div className="flex items-center gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => navigator.clipboard.writeText(msg.content)} className="p-1.5 rounded hover:bg-white/5 text-slate-600 hover:text-slate-400 transition-colors">
-                        <Copy className="h-3.5 w-3.5" />
-                      </button>
-                      <button onClick={() => saveInsight(msg.content)} className="p-1.5 rounded hover:bg-white/5 text-slate-600 hover:text-slate-400 transition-colors">
-                        <Bookmark className="h-3.5 w-3.5" />
-                      </button>
+                    <div className="user-message">
+                      <p className="text-sm leading-relaxed" style={{ color: "var(--page-fg)" }}>{msg.content}</p>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+                        style={{ background: "var(--accent-subtle)", border: "1px solid var(--accent-glow)" }}
+                      >
+                        <Bot className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
+                      </div>
+                      <span className="text-xs font-medium" style={{ color: "var(--muted-fg)" }}>Lumiqs AI</span>
+                    </div>
+                    <div className="ai-message">
+                      <div className="prose text-sm max-w-none">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                      </div>
+                      <div className="flex items-center gap-1 mt-4 pt-3 opacity-0 group-hover:opacity-100 transition-opacity" style={{ borderTop: "1px solid var(--line)" }}>
+                        <button
+                          onClick={() => navigator.clipboard.writeText(msg.content)}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors"
+                          style={{ color: "var(--muted-fg)" }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)"; (e.currentTarget as HTMLElement).style.color = "var(--page-fg)"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--muted-fg)"; }}
+                        >
+                          <Copy className="h-3.5 w-3.5" /> Copy
+                        </button>
+                        <button
+                          onClick={() => saveInsight(msg.content)}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors"
+                          style={{ color: "var(--muted-fg)" }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)"; (e.currentTarget as HTMLElement).style.color = "var(--page-fg)"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--muted-fg)"; }}
+                        >
+                          <Bookmark className="h-3.5 w-3.5" /> Save insight
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             ))}
           </AnimatePresence>
 
-          {/* Streaming */}
+          {/* Streaming response */}
           {streaming && streamingContent && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 max-w-3xl">
-              <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Bot className="h-4 w-4 text-indigo-300" aria-label="Lumiqs AI" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-3xl">
+              <div className="flex items-center gap-2 mb-2">
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: "var(--accent-subtle)", border: "1px solid var(--accent-glow)" }}
+                >
+                  <Bot className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
+                </div>
+                <span className="text-xs font-medium" style={{ color: "var(--muted-fg)" }}>Lumiqs AI</span>
               </div>
-              <div className="flex-1 prose text-sm max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingContent}</ReactMarkdown>
-                <span className="inline-block w-1.5 h-4 bg-indigo-400 animate-pulse ml-0.5 align-middle" />
+              <div className="ai-message">
+                <div className="prose text-sm max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingContent}</ReactMarkdown>
+                  <span
+                    className="inline-block w-1.5 h-4 ml-0.5 align-middle animate-cursor"
+                    style={{ background: "var(--accent)", borderRadius: "2px" }}
+                  />
+                </div>
               </div>
             </motion.div>
           )}
 
           {streaming && !streamingContent && (
-            <div className="flex gap-3 max-w-3xl">
-              <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0">
-                <Bot className="h-4 w-4 text-indigo-300" aria-label="Lumiqs AI" />
+            <div className="max-w-3xl">
+              <div className="flex items-center gap-2 mb-2">
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: "var(--accent-subtle)", border: "1px solid var(--accent-glow)" }}
+                >
+                  <Bot className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
+                </div>
+                <span className="text-xs font-medium" style={{ color: "var(--muted-fg)" }}>Lumiqs AI</span>
               </div>
-              <div className="flex items-center gap-1 py-2">
-                {[0, 1, 2].map((i) => (
-                  <span key={i} className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
-                ))}
+              <div className="ai-message">
+                <div className="flex items-center gap-1.5">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="w-1.5 h-1.5 rounded-full animate-bounce"
+                      style={{ background: "var(--accent)", animationDelay: `${i * 0.15}s`, opacity: 0.6 }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -434,10 +519,18 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="border-t border-white/8 p-4">
+        {/* ── Input area ── */}
+        <div
+          className="px-6 py-4 flex-shrink-0"
+          style={{ borderTop: "1px solid var(--line)", background: "var(--surface)" }}
+        >
           <div className="max-w-3xl mx-auto">
-            <div className="flex gap-3 items-end bg-white/5 border border-white/10 rounded-xl p-3 focus-within:border-indigo-500/50 transition-colors">
+            <div
+              className="flex gap-3 items-end rounded-xl p-3 transition-all"
+              style={{ border: "1px solid var(--line-strong)", background: "var(--surface-raised)" }}
+              onFocusCapture={(e) => (e.currentTarget as HTMLElement).style.borderColor = "rgba(79,70,229,0.4)"}
+              onBlurCapture={(e) => (e.currentTarget as HTMLElement).style.borderColor = "var(--line-strong)"}
+            >
               <Textarea
                 ref={textareaRef}
                 value={input}
@@ -457,7 +550,9 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
                 {streaming ? <Spinner size="sm" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
-            <p className="text-xs text-slate-600 text-center mt-2">Press Enter to send · Shift+Enter for new line</p>
+            <p className="text-xs text-center mt-2" style={{ color: "var(--subtle-fg)" }}>
+              Enter to send · Shift+Enter for new line
+            </p>
           </div>
         </div>
       </div>

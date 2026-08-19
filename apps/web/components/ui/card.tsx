@@ -5,10 +5,11 @@ export const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
   ({ className, style, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("rounded-[18px] transition-[border-color,box-shadow] duration-200", className)}
+      className={cn("rounded-2xl transition-[border-color,box-shadow] duration-200", className)}
       style={{
         border: "1px solid var(--card-border)",
         background: "var(--card-bg)",
+        boxShadow: "var(--card-shadow)",
         ...style,
       }}
       {...props}
@@ -22,7 +23,11 @@ export const CardHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDiv
 );
 
 export const CardTitle = ({ className, style, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h3 className={cn("text-base font-semibold", className)} style={{ color: "var(--page-fg)", ...style }} {...props} />
+  <h3
+    className={cn("text-base font-semibold tracking-tight", className)}
+    style={{ color: "var(--page-fg)", letterSpacing: "-0.015em", ...style }}
+    {...props}
+  />
 );
 
 export const CardDescription = ({ className, style, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (

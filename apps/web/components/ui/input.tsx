@@ -8,9 +8,17 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     <input
       ref={ref}
       className={cn(
-        "flex h-10 w-full rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 py-2 text-sm text-[var(--page-fg)] placeholder:text-[var(--muted-fg)] focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 disabled:opacity-50 transition-colors",
+        "flex h-10 w-full rounded-lg px-3.5 py-2 text-sm transition-all duration-150",
+        "placeholder:text-[var(--subtle-fg)]",
+        "focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/25 focus:border-[var(--accent)]",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
         className,
       )}
+      style={{
+        border: "1px solid var(--line-strong)",
+        background: "var(--surface-raised)",
+        color: "var(--page-fg)",
+      }}
       {...props}
     />
   ),
@@ -24,9 +32,17 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     <textarea
       ref={ref}
       className={cn(
-        "flex min-h-[96px] w-full rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 py-2.5 text-sm text-[var(--page-fg)] placeholder:text-[var(--muted-fg)] focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 disabled:opacity-50 transition-colors resize-none",
+        "flex min-h-[96px] w-full rounded-lg px-3.5 py-2.5 text-sm transition-all duration-150",
+        "placeholder:text-[var(--subtle-fg)]",
+        "focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/25 focus:border-[var(--accent)]",
+        "disabled:opacity-50 disabled:cursor-not-allowed resize-none",
         className,
       )}
+      style={{
+        border: "1px solid var(--line-strong)",
+        background: "var(--surface-raised)",
+        color: "var(--page-fg)",
+      }}
       {...props}
     />
   ),

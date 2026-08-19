@@ -23,7 +23,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body className="font-sans antialiased">
           <ThemeProvider>
             {children}
-            <Toaster theme="light" position="top-right" richColors />
+            <Toaster
+              position="top-right"
+              richColors
+              toastOptions={{
+                style: {
+                  fontFamily: "Inter, sans-serif",
+                  fontSize: "13px",
+                  borderRadius: "12px",
+                },
+              }}
+            />
           </ThemeProvider>
         </body>
       </html>
