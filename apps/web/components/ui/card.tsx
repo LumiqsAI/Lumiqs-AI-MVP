@@ -5,7 +5,7 @@ export const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
   ({ className, style, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("rounded-2xl backdrop-blur-sm transition-[border-color,box-shadow,transform] duration-300", className)}
+      className={cn("rounded-[18px] transition-[border-color,box-shadow] duration-200", className)}
       style={{
         border: "1px solid var(--card-border)",
         background: "var(--card-bg)",

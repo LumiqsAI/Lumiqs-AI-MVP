@@ -53,11 +53,11 @@ export function Sidebar() {
         href={href}
         onClick={() => setMobileOpen(false)}
         className={cn(
-          "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all",
           collapsed && "justify-center px-2",
         )}
         style={active
-          ? { background: "rgba(99,102,241,.15)", color: "#a5b4fc" }
+          ? { background: "var(--nav-active-bg)", color: "var(--nav-active-fg)" }
           : { color: "var(--muted-fg)" }
         }
       >

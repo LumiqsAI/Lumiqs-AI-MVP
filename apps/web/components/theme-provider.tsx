@@ -8,11 +8,11 @@ interface ThemeContextValue { theme: Theme; toggleTheme: () => void; }
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
     const stored = window.localStorage.getItem("lumiqs-theme") as Theme | null;
-    const next = stored === "light" || stored === "dark" ? stored : "dark";
+    const next = stored === "light" || stored === "dark" ? stored : "light";
     setTheme(next);
     document.documentElement.dataset.theme = next;
   }, []);
