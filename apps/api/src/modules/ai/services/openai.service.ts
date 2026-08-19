@@ -19,7 +19,7 @@ export class OpenAIService {
       timeout: 60000,
       maxRetries: 2,
     });
-    this.model = process.env.AI_MODEL || 'qwen3:4b';
+    this.model = process.env.AI_MODEL || 'llama-3.1-8b-instant';
     this.maxTokens = parseInt(process.env.AI_MAX_TOKENS || '4096', 10);
     this.temperature = parseFloat(process.env.AI_TEMPERATURE || '0.7');
   }
@@ -72,7 +72,20 @@ export class OpenAIService {
     });
     const content = response.choices[0]?.message?.content || '';
     if (!content.trim()) throw new Error('AI provider returned an empty structured response');
-    return JSON.parse(content);
+    return this.parseJSON(content);
+  }
+
+  private parseJSON(content: string): unknown {
+    // Strip markdown code fences that some models wrap JSON in
+    const stripped = content
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/, '')
+      .trim();
+    // Find the first { or [ and last } or ]
+    const start = stripped.search(/[{[]/);
+    const end = Math.max(stripped.lastIndexOf('}'), stripped.lastIndexOf(']'));
+    if (start === -1 || end === -1) throw new Error('No JSON object found in AI response');
+    return JSON.parse(stripped.slice(start, end + 1));
   }
 
   private describeProviderError(error: unknown): string {

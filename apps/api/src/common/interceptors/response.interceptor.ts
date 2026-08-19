@@ -2,6 +2,14 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nes
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+// Used on SSE/streaming endpoints to bypass the global response wrapper
+@Injectable()
+export class NoopInterceptor implements NestInterceptor {
+  intercept(_ctx: ExecutionContext, next: CallHandler): Observable<unknown> {
+    return next.handle();
+  }
+}
+
 function normalizeMongoIds(value: unknown): unknown {
   if (value === null || value === undefined) return value;
 

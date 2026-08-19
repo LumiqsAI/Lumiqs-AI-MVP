@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Check, IndianRupee, DollarSign, Loader2 } from "lucide-react";
-import { useState, useCallback } from "react";
+import { ArrowRight, Check, IndianRupee, DollarSign, Loader2, BadgeCheck } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { PublicShell } from "@/components/shared/public-site";
@@ -26,16 +26,20 @@ interface RazorpayOptions {
   theme?: { color?: string };
   modal?: { ondismiss?: () => void };
 }
-
-interface RazorpayInstance {
-  open(): void;
-}
-
+interface RazorpayInstance { open(): void; }
 interface RazorpayResponse {
   razorpay_order_id: string;
   razorpay_payment_id: string;
   razorpay_signature: string;
 }
+
+// Plan rank — higher = better plan
+const PLAN_RANK: Record<string, number> = {
+  explorer: 0,
+  founder: 1,
+  studio: 2,
+  custom: 3,
+};
 
 const plans = [
   {
@@ -46,9 +50,10 @@ const plans = [
     description: "Build your first business context and explore the Lumiqs method.",
     features: [
       "1 business workspace",
+      "20 AI messages / month",
+      "10 insights per business",
+      "2 reports / month",
       "Business profile and memory",
-      "AI Consultant access",
-      "Limited monthly AI usage",
     ],
     cta: "Start free",
     href: "/sign-up",
@@ -64,10 +69,11 @@ const plans = [
     description: "For founders making decisions every week and turning insight into motion.",
     features: [
       "Up to 3 workspaces",
-      "Unlimited saved insights",
-      "Analysis and market research",
+      "200 AI messages / month",
+      "100 insights per business",
+      "20 reports / month",
+      "Analysis, market research & competitors",
       "Strategy and execution plans",
-      "Professional reports",
     ],
     cta: "Choose Founder",
     href: "/sign-up",
@@ -83,10 +89,11 @@ const plans = [
     description: "For consultants and small teams managing multiple decision trails.",
     features: [
       "Unlimited workspaces",
-      "Higher AI usage limits",
-      "Combined reports and PDF export",
+      "1,000 AI messages / month",
+      "Unlimited insights",
+      "100 reports / month",
+      "PDF export",
       "Priority support",
-      "Advanced workspace controls",
     ],
     cta: "Choose Studio",
     href: "/sign-up",
@@ -102,7 +109,7 @@ const plans = [
     description: "For larger teams and enterprises that need custom limits, SLAs, and dedicated support.",
     features: [
       "Everything in Studio",
-      "Custom AI usage limits",
+      "Unlimited AI usage",
       "Dedicated account manager",
       "Custom integrations",
       "SLA & uptime guarantee",
@@ -130,8 +137,20 @@ function loadRazorpayScript(): Promise<boolean> {
 export default function PricingPage() {
   const [currency, setCurrency] = useState<"usd" | "inr">("inr");
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const { isSignedIn } = useAuth();
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  const [planLoading, setPlanLoading] = useState(false);
+  const { isSignedIn, isLoaded } = useAuth();
   const api = useApiClient();
+
+  // Fetch current plan only when signed in
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    setPlanLoading(true);
+    api.get<{ plan: string }>("/users/plan")
+      .then((r) => setCurrentPlan(r.plan))
+      .catch(() => {})
+      .finally(() => setPlanLoading(false));
+  }, [isSignedIn, isLoaded, api]);
 
   const handlePaidPlan = useCallback(
     async (planKey: "founder" | "studio") => {
@@ -143,9 +162,7 @@ export default function PricingPage() {
           return;
         }
 
-        // Fetch key from backend (keeps key server-side in env)
         const { keyId } = await api.get<{ keyId: string }>("/payments/key");
-
         const order = await api.post<{ orderId: string; amount: number; currency: string }>(
           "/payments/order",
           { plan: planKey, currency },
@@ -168,15 +185,12 @@ export default function PricingPage() {
                 plan: planKey,
               });
               toast.success(`You're now on the ${planKey.charAt(0).toUpperCase() + planKey.slice(1)} plan!`);
-              // Redirect to dashboard after upgrade
               window.location.href = "/dashboard";
             } catch {
               toast.error("Payment received but plan upgrade failed. Contact support.");
             }
           },
-          modal: {
-            ondismiss: () => setLoadingPlan(null),
-          },
+          modal: { ondismiss: () => setLoadingPlan(null) },
         });
 
         rzp.open();
@@ -188,10 +202,113 @@ export default function PricingPage() {
     [api, currency],
   );
 
+  const renderCta = (plan: typeof plans[number]) => {
+    const isCustom = plan.planKey === "custom";
+    const isCurrent = isSignedIn && currentPlan === plan.planKey;
+    const isDowngrade = isSignedIn && currentPlan !== null &&
+      PLAN_RANK[plan.planKey] < PLAN_RANK[currentPlan];
+    const isLoading = loadingPlan === plan.planKey;
+
+    const featuredStyle = {
+      background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+      color: "#fff",
+      boxShadow: "0 0 20px var(--accent-glow)",
+    };
+    const defaultStyle = {
+      border: "1px solid var(--line-strong)",
+      color: "var(--muted-fg)",
+      background: "var(--surface-raised)",
+    };
+    const customStyle = {
+      background: "var(--surface-raised)",
+      border: "1px solid var(--accent)",
+      color: "var(--accent)",
+    };
+    const currentStyle = {
+      border: "1px solid rgba(99,102,241,.4)",
+      color: "#a5b4fc",
+      background: "rgba(99,102,241,.1)",
+      cursor: "default",
+    };
+    const disabledStyle = {
+      border: "1px solid var(--line)",
+      color: "var(--muted-fg)",
+      background: "var(--surface)",
+      opacity: 0.45,
+      cursor: "not-allowed",
+    };
+
+    // Current plan button
+    if (isCurrent) {
+      return (
+        <div
+          className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium"
+          style={currentStyle}
+        >
+          <BadgeCheck className="h-3.5 w-3.5" /> Current plan
+        </div>
+      );
+    }
+
+    // Downgrade — disabled
+    if (isDowngrade) {
+      return (
+        <button
+          disabled
+          className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium"
+          style={disabledStyle}
+          title="You cannot downgrade your plan"
+        >
+          Downgrade not available
+        </button>
+      );
+    }
+
+    // Paid plan — signed in → Razorpay
+    if (plan.paid && isSignedIn) {
+      return (
+        <button
+          onClick={() => void handlePaidPlan(plan.planKey as "founder" | "studio")}
+          disabled={isLoading || planLoading}
+          className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all disabled:opacity-60"
+          style={plan.featured ? featuredStyle : defaultStyle}
+        >
+          {isLoading
+            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            : <>{plan.cta} <ArrowRight className="h-3.5 w-3.5" /></>}
+        </button>
+      );
+    }
+
+    // Paid plan — not signed in → redirect to sign-up
+    if (plan.paid && !isSignedIn) {
+      return (
+        <Link
+          href="/sign-up?redirect=/pricing"
+          className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+          style={plan.featured ? featuredStyle : defaultStyle}
+        >
+          {plan.cta} <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      );
+    }
+
+    // Free / Custom / Explorer
+    return (
+      <Link
+        href={isCustom ? plan.href : isSignedIn ? "/dashboard" : plan.href}
+        className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+        style={isCustom ? customStyle : defaultStyle}
+      >
+        {isCustom ? plan.cta : isSignedIn ? "Go to dashboard" : plan.cta}
+        <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
+    );
+  };
+
   return (
     <PublicShell>
       <main>
-        {/* Header */}
         <section className="mx-auto max-w-7xl px-5 pb-12 pt-20 text-center lg:px-8 lg:pt-28">
           <p className="text-xs font-semibold uppercase tracking-[.22em] text-indigo-400">
             Pricing that stays legible
@@ -207,7 +324,6 @@ export default function PricingPage() {
             Use Lumiqs free while you shape your context. Upgrade when the quality of your decisions becomes a weekly operating habit.
           </p>
 
-          {/* Currency toggle */}
           <div
             className="mt-10 inline-flex items-center gap-1 rounded-full p-1"
             style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
@@ -215,57 +331,58 @@ export default function PricingPage() {
             <button
               onClick={() => setCurrency("usd")}
               className="inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-medium transition-all"
-              style={
-                currency === "usd"
-                  ? { background: "var(--accent)", color: "#fff", boxShadow: "0 0 16px var(--accent-glow)" }
-                  : { color: "var(--muted-fg)" }
-              }
+              style={currency === "usd"
+                ? { background: "var(--accent)", color: "#fff", boxShadow: "0 0 16px var(--accent-glow)" }
+                : { color: "var(--muted-fg)" }}
             >
               <DollarSign className="h-3.5 w-3.5" /> USD
             </button>
             <button
               onClick={() => setCurrency("inr")}
               className="inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-sm font-medium transition-all"
-              style={
-                currency === "inr"
-                  ? { background: "var(--accent)", color: "#fff", boxShadow: "0 0 16px var(--accent-glow)" }
-                  : { color: "var(--muted-fg)" }
-              }
+              style={currency === "inr"
+                ? { background: "var(--accent)", color: "#fff", boxShadow: "0 0 16px var(--accent-glow)" }
+                : { color: "var(--muted-fg)" }}
             >
               <IndianRupee className="h-3.5 w-3.5" /> INR
             </button>
           </div>
         </section>
 
-        {/* Plans */}
         <section className="mx-auto grid max-w-7xl gap-4 px-5 pb-24 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
           {plans.map((plan) => {
             const pricing = currency === "usd" ? plan.usd : plan.inr;
-            const isCustom = plan.name === "Custom";
-            const isLoading = loadingPlan === plan.planKey;
+            const isCustom = plan.planKey === "custom";
+            const isCurrent = isSignedIn && currentPlan === plan.planKey;
 
             return (
               <article
                 key={plan.name}
                 className="relative flex flex-col rounded-2xl p-6 transition-all hover:-translate-y-1"
                 style={
-                  plan.featured
-                    ? {
-                        border: "1px solid rgba(99,102,241,.45)",
-                        background: "rgba(99,102,241,.07)",
-                        boxShadow: "0 20px 60px -10px rgba(99,102,241,.2)",
-                      }
+                  isCurrent
+                    ? { border: "1px solid rgba(99,102,241,.5)", background: "rgba(99,102,241,.06)", boxShadow: "0 0 0 1px rgba(99,102,241,.2)" }
+                    : plan.featured
+                    ? { border: "1px solid rgba(99,102,241,.45)", background: "rgba(99,102,241,.07)", boxShadow: "0 20px 60px -10px rgba(99,102,241,.2)" }
                     : { border: "1px solid var(--card-border)", background: "var(--card-bg)" }
                 }
               >
-                {plan.badge && (
+                {/* Current plan badge takes priority over "Most popular" */}
+                {isCurrent ? (
+                  <span
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[.16em] whitespace-nowrap inline-flex items-center gap-1"
+                    style={{ background: "#6366f1", color: "#fff" }}
+                  >
+                    <BadgeCheck className="h-3 w-3" /> Current plan
+                  </span>
+                ) : plan.badge ? (
                   <span
                     className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[.16em] whitespace-nowrap"
                     style={{ background: "var(--accent)", color: "#fff", boxShadow: "0 0 16px var(--accent-glow)" }}
                   >
                     {plan.badge}
                   </span>
-                )}
+                ) : null}
 
                 <h2 className="text-lg font-semibold" style={{ color: "var(--page-fg)" }}>{plan.name}</h2>
                 <p className="mt-3 text-xs leading-5" style={{ color: "var(--muted-fg)" }}>{plan.description}</p>
@@ -281,41 +398,13 @@ export default function PricingPage() {
                   )}
                 </div>
 
-                {!isCustom && currency === "inr" && plan.name !== "Explorer" && (
+                {!isCustom && currency === "inr" && plan.planKey !== "explorer" && (
                   <p className="mt-1 text-[11px]" style={{ color: "var(--muted-fg)", opacity: 0.55 }}>
                     ≈ {plan.usd.price} USD
                   </p>
                 )}
 
-                {/* CTA button */}
-                {plan.paid && isSignedIn ? (
-                  <button
-                    onClick={() => void handlePaidPlan(plan.planKey as "founder" | "studio")}
-                    disabled={isLoading}
-                    className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all disabled:opacity-60"
-                    style={
-                      plan.featured
-                        ? { background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", color: "#fff", boxShadow: "0 0 20px var(--accent-glow)" }
-                        : { border: "1px solid var(--line-strong)", color: "var(--muted-fg)", background: "var(--surface-raised)" }
-                    }
-                  >
-                    {isLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <>{plan.cta} <ArrowRight className="h-3.5 w-3.5" /></>}
-                  </button>
-                ) : (
-                  <Link
-                    href={plan.paid && !isSignedIn ? `/sign-up?redirect=/pricing` : plan.href}
-                    className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
-                    style={
-                      plan.featured
-                        ? { background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", color: "#fff", boxShadow: "0 0 20px var(--accent-glow)" }
-                        : isCustom
-                        ? { background: "var(--surface-raised)", border: "1px solid var(--accent)", color: "var(--accent)" }
-                        : { border: "1px solid var(--line-strong)", color: "var(--muted-fg)", background: "var(--surface-raised)" }
-                    }
-                  >
-                    {plan.cta} <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                )}
+                {renderCta(plan)}
 
                 <ul className="mt-6 space-y-3 pt-6" style={{ borderTop: "1px solid var(--line)" }}>
                   {plan.features.map((feature) => (
@@ -330,7 +419,6 @@ export default function PricingPage() {
           })}
         </section>
 
-        {/* Footer note */}
         <section className="mx-auto max-w-3xl px-5 pb-24 text-center lg:px-8">
           <p className="text-sm leading-7" style={{ color: "var(--muted-fg)" }}>
             Plans and usage limits may change during the product preview. INR pricing is approximate and subject to change. Lumiqs does not sell outcomes — AI guidance should be evaluated alongside your own business evidence.

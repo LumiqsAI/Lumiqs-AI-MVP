@@ -1,4 +1,5 @@
-import { Controller, Post, Body, Param, UseGuards, Res, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, Param, UseGuards, Res, HttpCode, UseInterceptors } from '@nestjs/common';
+import { NoopInterceptor } from '../../common/interceptors/response.interceptor';
 import type { Response } from 'express';
 import { AIOrchestrator } from './services/ai-orchestrator.service';
 import { ChatDto } from './ai.dto';
@@ -15,6 +16,7 @@ export class AIController {
 
   @Post('chat')
   @HttpCode(200)
+  @UseInterceptors(NoopInterceptor)
   @Throttle({ default: { ttl: 60000, limit: 20 } })
   async chat(
     @Param('businessId') businessId: string,

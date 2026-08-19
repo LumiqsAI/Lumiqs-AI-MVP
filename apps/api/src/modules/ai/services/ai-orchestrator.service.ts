@@ -1,4 +1,4 @@
-import { Injectable, Logger, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Business, BusinessDocument } from '../../businesses/business.schema';
@@ -55,7 +55,7 @@ export class AIOrchestrator {
     res: Response,
     userPlan: UserPlan = UserPlan.EXPLORER,
   ) {
-    // Check monthly AI message limit
+    // Check monthly AI message limit before touching headers
     const limits = this.planLimits.getLimits(userPlan);
     if (!this.planLimits.isUnlimited(limits.maxAiMessagesPerMonth)) {
       const startOfMonth = new Date();
@@ -67,9 +67,13 @@ export class AIOrchestrator {
         createdAt: { $gte: startOfMonth },
       });
       if (usedThisMonth >= limits.maxAiMessagesPerMonth) {
-        throw new ForbiddenException(
-          `You have used all ${limits.maxAiMessagesPerMonth} AI messages for this month on the ${userPlan} plan. Upgrade to continue.`,
-        );
+        // Send as SSE error so the frontend can display it cleanly
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.write(`data: ${JSON.stringify({ error: `You have used all ${limits.maxAiMessagesPerMonth} AI messages for this month on the ${userPlan} plan. Upgrade to continue.` })}\n\n`);
+        res.end();
+        return;
       }
     }
     // Verify ownership
