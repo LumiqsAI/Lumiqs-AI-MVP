@@ -5,6 +5,7 @@ import { AIOrchestrator } from './services/ai-orchestrator.service';
 import { OpenAIService } from './services/openai.service';
 import { BusinessContextService } from './services/business-context.service';
 import { MemoryService } from './services/memory.service';
+import { KnowledgeService } from './services/knowledge.service';
 import { Business, BusinessSchema } from '../businesses/business.schema';
 import { Conversation, ConversationSchema } from '../conversations/conversation.schema';
 import { Message, MessageSchema } from '../conversations/message.schema';
@@ -20,7 +21,7 @@ import { BusinessMemory, BusinessMemorySchema } from '../memory/business-memory.
     ]),
   ],
   controllers: [AIController],
-  providers: [AIOrchestrator, OpenAIService, BusinessContextService, MemoryService],
-  exports: [AIOrchestrator, OpenAIService, BusinessContextService, MemoryService],
+  providers: [AIOrchestrator, OpenAIService, BusinessContextService, MemoryService, KnowledgeService],
+  exports: [AIOrchestrator, OpenAIService, BusinessContextService, MemoryService, KnowledgeService],
 })
 export class AIModule {}

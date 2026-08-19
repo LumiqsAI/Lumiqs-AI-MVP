@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import { Business, BusinessDocument } from '../../businesses/business.schema';
 import { BusinessMemory, BusinessMemoryDocument } from '../../memory/business-memory.schema';
 import { Message, MessageDocument } from '../../conversations/message.schema';
+import { KnowledgeService } from './knowledge.service';
 
 export interface BuiltContext {
   business: BusinessDocument;
@@ -20,9 +21,10 @@ export class BusinessContextService {
     @InjectModel(Business.name) private readonly businessModel: Model<BusinessDocument>,
     @InjectModel(BusinessMemory.name) private readonly memoryModel: Model<BusinessMemoryDocument>,
     @InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
+    private readonly knowledgeService: KnowledgeService,
   ) {}
 
-  async buildContext(businessId: string, conversationId?: string): Promise<BuiltContext> {
+  async buildContext(businessId: string, conversationId?: string, question = ''): Promise<BuiltContext> {
     const oid = new Types.ObjectId(businessId);
     const [business, memories, recentMessages] = await Promise.all([
       this.businessModel.findById(oid).orFail(),
@@ -35,11 +37,12 @@ export class BusinessContextService {
         : Promise.resolve([]),
     ]);
 
-    const contextBlock = this.buildContextBlock(business, memories);
+    const playbook = this.knowledgeService.format(this.knowledgeService.retrieve(question));
+    const contextBlock = this.buildContextBlock(business, memories, playbook);
     return { business, memories, recentMessages, contextBlock };
   }
 
-  private buildContextBlock(business: BusinessDocument, memories: BusinessMemoryDocument[]): string {
+  private buildContextBlock(business: BusinessDocument, memories: BusinessMemoryDocument[], playbook: string): string {
     const lines = [
       '## Business Context',
       '',
@@ -64,6 +67,8 @@ export class BusinessContextService {
         lines.push(`${i + 1}. [${m.type}] ${m.value}`);
       });
     }
+
+    if (playbook) lines.push('', playbook);
 
     return lines.join('\n');
   }

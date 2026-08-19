@@ -124,12 +124,14 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
       const decoder = new TextDecoder();
       let fullContent = "";
       let newConvId = activeConvId;
+      let pending = "";
 
       while (reader) {
         const { done, value } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
+        pending += decoder.decode(value, { stream: true });
+        const lines = pending.split("\n");
+        pending = lines.pop() || "";
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
           try {
@@ -149,6 +151,16 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
             }
           } catch { /* skip malformed */ }
         }
+      }
+
+      if (pending.startsWith("data: ")) {
+        try {
+          const data = JSON.parse(pending.slice(6));
+          if (data.delta) {
+            fullContent += data.delta;
+            setStreamingContent(fullContent);
+          }
+        } catch { /* ignore an incomplete terminal event */ }
       }
 
       // Add assistant message to state
