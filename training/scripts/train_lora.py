@@ -58,24 +58,30 @@ def main() -> None:
     else:
         trainer_kwargs["tokenizer"] = tokenizer
 
+    sft_parameters = inspect.signature(SFTConfig.__init__).parameters
+    sequence_length_key = "max_length" if "max_length" in sft_parameters else "max_seq_length"
+    training_config = {
+        "output_dir": args.output_dir,
+        "num_train_epochs": 2,
+        "per_device_train_batch_size": 2,
+        "gradient_accumulation_steps": 8,
+        "learning_rate": 2e-4,
+        "logging_steps": 10,
+        "save_strategy": "steps",
+        "save_steps": 250,
+        "fp16": True,
+        "bf16": False,
+        "gradient_checkpointing": True,
+        "report_to": "none",
+        sequence_length_key: 2048,
+        # Packing/padding-free mode requires Flash Attention and can mix
+        # examples on a Tesla T4, so keep it disabled for this free run.
+        "packing": False,
+    }
+
     trainer = SFTTrainer(
         **trainer_kwargs,
-        args=SFTConfig(
-            output_dir=args.output_dir,
-            num_train_epochs=2,
-            per_device_train_batch_size=2,
-            gradient_accumulation_steps=8,
-            learning_rate=2e-4,
-            logging_steps=10,
-            save_strategy="steps",
-            save_steps=250,
-            fp16=True,
-            bf16=False,
-            gradient_checkpointing=True,
-            report_to="none",
-            max_length=2048,
-            packing=True,
-        ),
+        args=SFTConfig(**training_config),
     )
     trainer.train()
     trainer.save_model(args.output_dir)
