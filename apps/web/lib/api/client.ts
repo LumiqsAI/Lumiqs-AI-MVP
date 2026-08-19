@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 const API_URL = `${BASE}/api/v1`;
@@ -39,13 +39,16 @@ export function useApiClient() {
     [getToken],
   );
 
-  return {
-    get: <T>(path: string) => request<T>(path, { method: "GET" }),
-    post: <T>(path: string, body?: unknown) =>
-      request<T>(path, { method: "POST", body: JSON.stringify(body) }),
-    patch: <T>(path: string, body?: unknown) =>
-      request<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
-    delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
-    getToken,
-  };
+  return useMemo(
+    () => ({
+      get: <T>(path: string) => request<T>(path, { method: "GET" }),
+      post: <T>(path: string, body?: unknown) =>
+        request<T>(path, { method: "POST", body: JSON.stringify(body) }),
+      patch: <T>(path: string, body?: unknown) =>
+        request<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
+      delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+      getToken,
+    }),
+    [getToken, request],
+  );
 }
