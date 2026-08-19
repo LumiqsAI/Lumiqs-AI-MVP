@@ -189,10 +189,7 @@ export default async function HomePage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="group glass-card rounded-xl p-6 transition-all hover:-translate-y-1"
-                style={{ "--hover-border": "rgba(99,102,241,.35)" } as React.CSSProperties}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(99,102,241,.35)")}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--card-border)")}
+                className="group glass-card rounded-xl p-6 transition-all hover:-translate-y-1 hover:border-indigo-400/30"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "rgba(99,102,241,.15)" }}>
                   <feature.icon className="h-5 w-5 text-indigo-400" />

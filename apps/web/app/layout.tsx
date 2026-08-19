@@ -18,15 +18,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <head>
-          <script
-            // eslint-disable-next-line react/no-danger
-            dangerouslySetInnerHTML={{
-              __html: `(function(){try{var s=localStorage.getItem('lumiqs-theme');var p=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.dataset.theme=(s==='light'||s==='dark')?s:p;}catch(e){document.documentElement.dataset.theme='dark';}})();`,
-            }}
-          />
-        </head>
+      <html lang="en" data-theme="dark" suppressHydrationWarning>
         <body className="font-sans antialiased">
           <ThemeProvider>
             {children}

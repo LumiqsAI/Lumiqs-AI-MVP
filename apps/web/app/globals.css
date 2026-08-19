@@ -114,6 +114,10 @@ body {
   border: 1px solid var(--card-border);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+.glass-card:hover {
+  border-color: rgba(99, 102, 241, 0.35);
 }
 
 /* ── Gradient text ────────────────────────────────────────────── */
