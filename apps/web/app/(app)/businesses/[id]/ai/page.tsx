@@ -125,6 +125,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
       let fullContent = "";
       let newConvId = activeConvId;
       let pending = "";
+      let streamError = "";
 
       while (reader) {
         const { done, value } = await reader.read();
@@ -140,6 +141,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
               fullContent += data.delta;
               setStreamingContent(fullContent);
             }
+            if (data.error) streamError = data.error;
             if (data.done) {
               // Reload conversations to get new one
               const convData = await api.get<{ items: Conversation[] }>(`/businesses/${businessId}/conversations`);
@@ -156,12 +158,16 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
       if (pending.startsWith("data: ")) {
         try {
           const data = JSON.parse(pending.slice(6));
+          if (data.error) streamError = data.error;
           if (data.delta) {
             fullContent += data.delta;
             setStreamingContent(fullContent);
           }
         } catch { /* ignore an incomplete terminal event */ }
       }
+
+      if (streamError) throw new Error(streamError);
+      if (!fullContent.trim()) throw new Error("The AI provider returned an empty response");
 
       // Add assistant message to state
       const assistantMsg: Message = {
@@ -247,7 +253,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
           </div>
           <div>
             <h2 className="text-sm font-semibold text-white">AI Business Consultant</h2>
-            <p className="text-xs text-slate-500">Powered by GPT-4o · Business context loaded</p>
+            <p className="text-xs text-slate-500">Business context and decision playbook loaded</p>
           </div>
         </div>
 

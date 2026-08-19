@@ -45,19 +45,41 @@ export class OpenAIService {
     messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
   ): Promise<unknown> {
     try {
-      const response = await this.client.chat.completions.create({
-        model: this.model,
-        messages,
-        max_tokens: this.maxTokens,
-        temperature: this.temperature,
-        response_format: { type: 'json_object' },
-      });
-      const content = response.choices[0]?.message?.content || '{}';
-      return JSON.parse(content);
+      return await this.requestJSON(messages, true);
     } catch (error) {
-      this.logger.error('OpenAI JSON chat error', error);
-      throw new ServiceUnavailableException('AI service temporarily unavailable');
+      const providerError = this.describeProviderError(error);
+      this.logger.warn(`Structured AI request failed with JSON mode (${providerError}); retrying without response_format`);
+
+      try {
+        return await this.requestJSON(messages, false);
+      } catch (retryError) {
+        this.logger.error(`Structured AI request failed after fallback (${this.describeProviderError(retryError)})`);
+        throw new ServiceUnavailableException('AI service temporarily unavailable. Check the configured AI provider, model, and API key.');
+      }
     }
+  }
+
+  private async requestJSON(
+    messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
+    useJsonMode: boolean,
+  ): Promise<unknown> {
+    const response = await this.client.chat.completions.create({
+      model: this.model,
+      messages,
+      max_tokens: this.maxTokens,
+      temperature: this.temperature,
+      ...(useJsonMode ? { response_format: { type: 'json_object' as const } } : {}),
+    });
+    const content = response.choices[0]?.message?.content || '';
+    if (!content.trim()) throw new Error('AI provider returned an empty structured response');
+    return JSON.parse(content);
+  }
+
+  private describeProviderError(error: unknown): string {
+    if (error instanceof OpenAI.APIError) {
+      return `${error.status || 'unknown'} ${error.code || error.name}: ${error.message}`;
+    }
+    return error instanceof Error ? error.message : 'unknown provider error';
   }
 
   async streamChat(
