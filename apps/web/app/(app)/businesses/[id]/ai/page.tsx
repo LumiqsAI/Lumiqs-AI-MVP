@@ -248,8 +248,8 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <div className="border-b border-white/8 px-6 py-4 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600/20 flex items-center justify-center">
-            <Bot className="h-4 w-4 text-indigo-400" />
+          <div className="w-8 h-8 rounded-lg bg-indigo-600/20 flex items-center justify-center overflow-hidden">
+            <img src="/logo.png" alt="Lumiqs AI" className="w-6 h-6 object-contain" />
           </div>
           <div>
             <h2 className="text-sm font-semibold text-white">AI Business Consultant</h2>
@@ -262,8 +262,8 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
           {messages.length === 0 && !streaming && (
             <div className="max-w-2xl mx-auto">
               <div className="text-center mb-8">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-600/20 flex items-center justify-center mx-auto mb-4">
-                  <Bot className="h-7 w-7 text-indigo-400" />
+                <div className="w-14 h-14 rounded-2xl bg-indigo-600/20 flex items-center justify-center mx-auto mb-4 overflow-hidden">
+                  <img src="/logo.png" alt="Lumiqs AI" className="w-10 h-10 object-contain" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Your AI Business Consultant</h3>
                 <p className="text-sm text-slate-400">Ask me anything about your business. I have full context about your company, goals, and challenges.</p>
@@ -293,10 +293,10 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
                 className={cn("flex gap-3 max-w-3xl", msg.role === "USER" ? "ml-auto flex-row-reverse" : "")}
               >
                 <div className={cn(
-                  "w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5",
+                  "w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 overflow-hidden",
                   msg.role === "USER" ? "bg-indigo-600/30" : "bg-slate-800",
                 )}>
-                  {msg.role === "USER" ? <User className="h-3.5 w-3.5 text-indigo-300" /> : <Bot className="h-3.5 w-3.5 text-slate-400" />}
+                  {msg.role === "USER" ? <User className="h-3.5 w-3.5 text-indigo-300" /> : <img src="/logo.png" alt="Lumiqs" className="w-5 h-5 object-contain" />}
                 </div>
                 <div className={cn(
                   "flex-1 min-w-0",
@@ -327,8 +327,8 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
           {/* Streaming */}
           {streaming && streamingContent && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 max-w-3xl">
-              <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Bot className="h-3.5 w-3.5 text-slate-400" />
+              <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5 overflow-hidden">
+                <img src="/logo.png" alt="Lumiqs" className="w-5 h-5 object-contain" />
               </div>
               <div className="flex-1 prose text-sm max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingContent}</ReactMarkdown>
@@ -339,8 +339,8 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
 
           {streaming && !streamingContent && (
             <div className="flex gap-3 max-w-3xl">
-              <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0">
-                <Bot className="h-3.5 w-3.5 text-slate-400" />
+              <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <img src="/logo.png" alt="Lumiqs" className="w-5 h-5 object-contain" />
               </div>
               <div className="flex items-center gap-1 py-2">
                 {[0, 1, 2].map((i) => (

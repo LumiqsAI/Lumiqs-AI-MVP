@@ -17,15 +17,7 @@ export function PublicHeaderClient({ isAuthenticated = false }: { isAuthenticate
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5 lg:px-8">
         <Link href="/" className="flex items-center gap-3" aria-label="Lumiqs AI home">
-          <span
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold text-white"
-            style={{
-              background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-              boxShadow: "0 0 24px var(--accent-glow)",
-            }}
-          >
-            L
-          </span>
+          <img src="/logo.png" alt="Lumiqs AI" className="h-9 w-9 rounded-xl object-contain" />
           <span className="font-semibold tracking-tight" style={{ color: "var(--page-fg)" }}>
             Lumiqs AI
           </span>

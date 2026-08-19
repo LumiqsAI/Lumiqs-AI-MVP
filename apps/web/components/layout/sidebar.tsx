@@ -65,10 +65,9 @@ export function Sidebar() {
         style={{ borderBottom: "1px solid var(--line)" }}
       >
         <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", boxShadow: "0 0 16px var(--accent-glow)" }}
+          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
         >
-          <span className="text-white font-bold text-sm">L</span>
+          <img src="/logo.png" alt="Lumiqs AI" className="w-full h-full object-contain" />
         </div>
         {!collapsed && <span className="font-semibold text-sm" style={{ color: "var(--page-fg)" }}>Lumiqs AI</span>}
       </div>

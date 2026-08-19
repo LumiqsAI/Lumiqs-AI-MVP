@@ -22,12 +22,7 @@ export function PublicFooter() {
       <div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] lg:px-8">
         <div>
           <Link href="/" className="flex items-center gap-3">
-            <span
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold text-white"
-              style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
-            >
-              L
-            </span>
+            <img src="/logo.png" alt="Lumiqs AI" className="h-9 w-9 rounded-xl object-contain" />
             <span className="font-semibold" style={{ color: "var(--page-fg)" }}>Lumiqs AI</span>
           </Link>
           <p className="mt-5 max-w-xs text-sm leading-6" style={{ color: "var(--muted-fg)" }}>

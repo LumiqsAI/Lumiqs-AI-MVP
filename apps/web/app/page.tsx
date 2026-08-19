@@ -144,7 +144,9 @@ export default async function HomePage() {
 
                     <div className="mt-6 rounded-xl p-4" style={{ border: "1px solid var(--line)", background: "var(--surface-raised)" }}>
                       <div className="flex gap-3">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs text-indigo-300" style={{ background: "rgba(99,102,241,.2)" }}>L</span>
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg overflow-hidden" style={{ background: "rgba(99,102,241,.2)" }}>
+                          <img src="/logo.png" alt="L" className="w-5 h-5 object-contain" />
+                        </span>
                         <div>
                           <p className="text-xs leading-5" style={{ color: "var(--muted-fg)" }}>
                             Your strongest near-term move is to narrow the ICP before adding another acquisition channel.
