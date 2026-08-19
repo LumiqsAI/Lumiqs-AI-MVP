@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     rootDir: apps/api
-    buildCommand: npm install --include=dev && npx prisma generate && npm run build
+    buildCommand: npm install --legacy-peer-deps && npm run build
     startCommand: node dist/main
     healthCheckPath: /api/v1/health
     envVars:
@@ -13,16 +13,16 @@ services:
         value: production
       - key: PORT
         value: 3001
-      - key: DATABASE_URL
+      - key: MONGODB_URI
         sync: false
-      - key: OPENAI_API_KEY
-        sync: false
+      - key: MONGODB_DB_NAME
+        value: lumiqs_ai
       - key: AI_BASE_URL
         sync: false
       - key: AI_API_KEY
         sync: false
       - key: AI_MODEL
-        sync: false
+        value: llama-3.1-8b-instant
       - key: AI_MAX_TOKENS
         value: 4096
       - key: AI_TEMPERATURE
