@@ -1,10 +1,11 @@
 """Remote QLoRA training entry point for a Lumiqs instruct model."""
 
 import argparse
+import inspect
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, TrainingArguments
 from peft import LoraConfig
-from trl import SFTTrainer
+from trl import SFTConfig, SFTTrainer
 
 
 def main() -> None:
@@ -38,21 +39,28 @@ def main() -> None:
             add_generation_prompt=False,
         )
 
-    trainer = SFTTrainer(
-        model=model,
-        tokenizer=tokenizer,
-        train_dataset=dataset,
-        formatting_func=format_messages,
-        max_seq_length=2048,
-        packing=True,
-        peft_config=LoraConfig(
+    # TRL 0.23+ uses processing_class and SFTConfig.max_length. Older TRL
+    # releases call the tokenizer argument tokenizer and use max_seq_length.
+    trainer_kwargs = {
+        "model": model,
+        "train_dataset": dataset,
+        "formatting_func": format_messages,
+        "peft_config": LoraConfig(
             r=16,
             lora_alpha=32,
             lora_dropout=0.05,
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
             task_type="CAUSAL_LM",
         ),
-        args=TrainingArguments(
+    }
+    if "processing_class" in inspect.signature(SFTTrainer.__init__).parameters:
+        trainer_kwargs["processing_class"] = tokenizer
+    else:
+        trainer_kwargs["tokenizer"] = tokenizer
+
+    trainer = SFTTrainer(
+        **trainer_kwargs,
+        args=SFTConfig(
             output_dir=args.output_dir,
             num_train_epochs=2,
             per_device_train_batch_size=2,
@@ -61,9 +69,12 @@ def main() -> None:
             logging_steps=10,
             save_strategy="steps",
             save_steps=250,
-            bf16=True,
+            fp16=True,
+            bf16=False,
             gradient_checkpointing=True,
             report_to="none",
+            max_length=2048,
+            packing=True,
         ),
     )
     trainer.train()
