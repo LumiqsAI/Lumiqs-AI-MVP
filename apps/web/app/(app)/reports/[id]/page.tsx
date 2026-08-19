@@ -101,18 +101,27 @@ export default function ReportViewerPage({ params }: { params: Promise<{ id: str
     try {
       const token = await api.getToken();
       const res = await fetch(`${API_URL}/reports/${reportId}/pdf`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/pdf",
+        },
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        const error = await res.json().catch(() => null) as { error?: { message?: string } } | null;
+        throw new Error(error?.error?.message || "Unable to generate the PDF. Please try again.");
+      }
       const blob = await res.blob();
+      if (!blob.size) throw new Error("The generated PDF was empty. Please try again.");
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `${report.title.replace(/\s+/g, "-")}.pdf`;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      toast.error("PDF download failed");
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "PDF download failed");
     } finally {
       setDownloading(false);
     }
