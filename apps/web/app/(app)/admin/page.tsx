@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { BarChart3, Building2, FileText, RefreshCw, Search, ShieldCheck, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -52,12 +53,21 @@ function planBadge(plan: UserPlan) {
 
 export default function AdminPage() {
   const api = useApiClient();
+  const router = useRouter();
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [authorized, setAuthorized] = useState(false);
+
+  useEffect(() => {
+    api.get<{ role: string }>("/users/me").then((user) => {
+      if (user.role === "admin") setAuthorized(true);
+      else router.replace("/dashboard");
+    }).catch(() => router.replace("/dashboard"));
+  }, [api, router]);
 
   const load = useCallback(async (query = "") => {
     setLoading(true);
@@ -81,8 +91,10 @@ export default function AdminPage() {
   }, [api]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (authorized) void load();
+  }, [load, authorized]);
+
+  if (!authorized) return null;
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

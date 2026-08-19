@@ -6,11 +6,12 @@ import { UserButton } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Building2, Bot, BarChart3, Globe, Users2,
-  Lightbulb, Rocket, FileText, Settings, ChevronLeft, ChevronRight, Menu, X, Bookmark,
+  Lightbulb, Rocket, FileText, Settings, ChevronLeft, ChevronRight, Menu, X, Bookmark, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThemeToggle } from "../theme-toggle";
+import { useApiClient } from "@/lib/api/client";
 
 const MAIN_NAV = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -34,6 +35,14 @@ export function Sidebar() {
   const businessId = params?.id as string | undefined;
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const api = useApiClient();
+
+  useEffect(() => {
+    api.get<{ role: string }>("/users/me").then((user) => {
+      if (user.role === "admin") setIsAdmin(true);
+    }).catch(() => {});
+  }, [api]);
 
   const businessNav = businessId ? BUSINESS_NAV(businessId) : [];
 
@@ -74,6 +83,7 @@ export function Sidebar() {
 
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
         {MAIN_NAV.map((item) => <NavLink key={item.href} {...item} />)}
+        {isAdmin && <NavLink href="/admin" icon={ShieldCheck} label="Admin" />}
 
         {businessNav.length > 0 && (
           <>
