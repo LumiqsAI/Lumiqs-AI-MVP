@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Report, ReportDocument, ReportType, ReportStatus } from '../reports/report.schema';
 import { AIOrchestrator } from '../ai/services/ai-orchestrator.service';
+import { PlanLimitsService } from '../plans/plan-limits.service';
+import { UserPlan } from '../users/user.schema';
 
 const ANALYSIS_SYSTEM_PROMPT = `You are a senior business analyst. Analyze the provided business and return a structured JSON response.
 Be analytical, specific, and practical. Label any estimates or assumptions clearly.
@@ -34,9 +36,11 @@ export class AnalysisService {
   constructor(
     @InjectModel(Report.name) private readonly reportModel: Model<ReportDocument>,
     private readonly orchestrator: AIOrchestrator,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
-  async generateAnalysis(businessId: string, userId: string) {
+  async generateAnalysis(businessId: string, userId: string, userPlan: UserPlan = UserPlan.EXPLORER) {
+    await this.planLimits.checkReportLimit(userId, userPlan);
     const report = await this.reportModel.create({
       businessId: new Types.ObjectId(businessId),
       userId: new Types.ObjectId(userId),

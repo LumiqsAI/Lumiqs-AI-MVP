@@ -22,7 +22,7 @@ export class AIController {
     @Param('businessId') businessId: string,
     @CurrentUser() user: UserDocument,
     @Body() dto: ChatDto,
-    @Res() res: Response,
+    @Res({ passthrough: false }) res: Response,
   ) {
     await this.orchestrator.chat(
       user._id.toString(),
@@ -32,5 +32,6 @@ export class AIController {
       res,
       user.plan,
     );
+    // Do NOT return anything — res is already ended by streamChat
   }
 }

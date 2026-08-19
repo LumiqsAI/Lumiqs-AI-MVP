@@ -81,7 +81,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
     setLoadingMsgs(true);
     try {
       const conv = await api.get<Conversation>(`/businesses/${businessId}/conversations/${convId}`);
-      setMessages(conv.messages?.filter((m) => m.role !== "SYSTEM") || []);
+      setMessages(conv.messages?.filter((m) => m.role !== "system" && m.role !== "SYSTEM") || []);
     } catch {
       toast.error("Failed to load conversation");
     } finally {
@@ -167,7 +167,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
       }
 
       if (streamError) throw new Error(streamError);
-      if (!fullContent.trim()) throw new Error("The AI provider returned an empty response");
+      if (!fullContent.trim()) throw new Error("The AI provider returned an empty response. Please try again.");
 
       // Add assistant message to state
       const assistantMsg: Message = {
@@ -180,7 +180,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
       setMessages((prev) => [...prev, assistantMsg]);
       setStreamingContent("");
     } catch (err) {
-      toast.error("AI response failed. Please try again.");
+      toast.error(err instanceof Error ? err.message : "AI response failed. Please try again.");
       setMessages((prev) => prev.filter((m) => m.id !== tempUserMsg.id));
     } finally {
       setStreaming(false);

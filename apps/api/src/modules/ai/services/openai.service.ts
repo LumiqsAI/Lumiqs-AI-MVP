@@ -104,6 +104,8 @@ export class OpenAIService {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no');
+    // Disable response buffering on proxies (Render/Nginx)
+    res.flushHeaders();
 
     let fullContent = '';
 
@@ -124,12 +126,30 @@ export class OpenAIService {
         }
       }
 
-      await onComplete(fullContent);
+      if (!fullContent.trim()) {
+        res.write(`data: ${JSON.stringify({ error: 'AI returned an empty response. Try again.' })}\n\n`);
+        res.end();
+        return;
+      }
+
+      try {
+        await onComplete(fullContent);
+      } catch (saveErr) {
+        this.logger.error('Failed to save AI response', saveErr);
+      }
+
       res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
       res.end();
     } catch (error) {
+      const msg = error instanceof OpenAI.APIError
+        ? `AI provider error ${error.status}: ${error.message}`
+        : 'AI service error. Please try again.';
       this.logger.error('OpenAI stream error', error);
-      res.write(`data: ${JSON.stringify({ error: 'AI service error' })}\n\n`);
+      if (!res.headersSent) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.flushHeaders();
+      }
+      res.write(`data: ${JSON.stringify({ error: msg })}\n\n`);
       res.end();
     }
   }

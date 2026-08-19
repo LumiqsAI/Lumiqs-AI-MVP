@@ -46,7 +46,7 @@ export class ReportsController {
   async downloadPdf(
     @Param('id') id: string,
     @CurrentUser() user: UserDocument,
-    @Res() res: Response,
+    @Res({ passthrough: false }) res: Response,
   ) {
     const limits = this.planLimits.getLimits(user.plan);
     if (!limits.canExportPdf) {
