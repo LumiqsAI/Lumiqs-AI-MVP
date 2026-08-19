@@ -2,17 +2,28 @@
 
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Building2, FileText, Bot, Plus, ArrowRight, TrendingUp, Sparkles, Compass, Search, Rocket } from "lucide-react";
+import { Building2, FileText, Bot, Plus, ArrowRight, TrendingUp, Sparkles, Compass, Search, Rocket, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DashboardData } from "@/types";
 import { formatRelativeTime, REPORT_TYPE_LABELS, STAGE_LABELS } from "@/lib/utils";
+import { useApiClient } from "@/lib/api/client";
+
+const PLAN_LABELS: Record<string, string> = { explorer: "Explorer", founder: "Founder", studio: "Studio", custom: "Custom" };
+const PLAN_BADGE: Record<string, "default" | "success" | "info"> = { explorer: "default", founder: "success", studio: "info", custom: "info" };
 
 export function DashboardClient({ initialData }: { initialData: DashboardData | null }) {
   const { user } = useUser();
+  const api = useApiClient();
+  const [plan, setPlan] = useState<string | null>(null);
   const data = initialData;
+
+  useEffect(() => {
+    api.get<{ plan: string }>("/users/plan").then((r) => setPlan(r.plan)).catch(() => {});
+  }, [api]);
 
   const firstName = user?.firstName || "there";
 
@@ -21,7 +32,22 @@ export function DashboardClient({ initialData }: { initialData: DashboardData | 
       <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <div className="mb-5 flex flex-wrap items-center gap-2 text-xs text-slate-500"><span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/20 bg-indigo-400/10 px-2.5 py-1 text-indigo-300"><Sparkles className="h-3.5 w-3.5" /> Decision workspace</span><span>Today&apos;s view</span></div>
+        <div className="mb-5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/20 bg-indigo-400/10 px-2.5 py-1 text-indigo-300">
+            <Sparkles className="h-3.5 w-3.5" /> Decision workspace
+          </span>
+          <span>Today&apos;s view</span>
+          {plan && (
+            <Badge variant={PLAN_BADGE[plan]}>
+              {PLAN_LABELS[plan]} plan
+            </Badge>
+          )}
+          {plan === "explorer" && (
+            <Link href="/pricing" className="inline-flex items-center gap-1 rounded-full border border-indigo-400/30 bg-indigo-400/10 px-2.5 py-1 text-indigo-300 hover:bg-indigo-400/20 transition-colors">
+              <Zap className="h-3 w-3" /> Upgrade
+            </Link>
+          )}
+        </div>
         <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><h1 className="text-3xl font-semibold tracking-tight text-white">Good morning, {firstName}.</h1><p className="mt-2 max-w-xl text-slate-400">A clear view of your businesses, decisions, and the next useful move.</p></div><Link href="/businesses/new"><Button><Plus className="h-4 w-4" /> New business</Button></Link></div>
       </motion.div>
 

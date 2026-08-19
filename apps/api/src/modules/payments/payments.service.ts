@@ -19,16 +19,23 @@ const PLAN_AMOUNTS: Record<string, Record<string, number>> = {
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
-  private readonly razorpay: Razorpay;
+  private _razorpay: Razorpay | null = null;
+
+  private get razorpay(): Razorpay {
+    if (!this._razorpay) {
+      const key_id = process.env.RAZORPAY_KEY_ID;
+      const key_secret = process.env.RAZORPAY_KEY_SECRET;
+      if (!key_id || !key_secret) {
+        throw new InternalServerErrorException('Razorpay is not configured');
+      }
+      this._razorpay = new Razorpay({ key_id, key_secret });
+    }
+    return this._razorpay;
+  }
 
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-  ) {
-    this.razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID!,
-      key_secret: process.env.RAZORPAY_KEY_SECRET!,
-    });
-  }
+  ) {}
 
   async createOrder(userId: string, dto: CreateOrderDto) {
     const amount = PLAN_AMOUNTS[dto.plan]?.[dto.currency];
