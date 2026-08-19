@@ -10,7 +10,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from datasets import load_dataset
+from huggingface_hub import HfApi, hf_hub_download
 
 SYSTEM = (
     "You are Lumiqs AI, a practical business decision-support consultant. "
@@ -74,6 +74,45 @@ def to_example(row: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
+def iter_raw_rows(dataset_id: str, split: str):
+    """Read source files without Arrow schema casting.
+
+    CEO-Reasoning-Trace contains nested optional columns. Loading it through
+    datasets.load_dataset can fail while casting those columns before we can
+    discard them, so the training job reads the repository artifacts directly.
+    """
+    api = HfApi()
+    files = api.list_repo_files(dataset_id, repo_type="dataset")
+    candidates = [
+        file for file in files
+        if file.lower().endswith((".parquet", ".json", ".jsonl"))
+        and (split.lower() in file.lower() or split == "train")
+    ]
+    if not candidates:
+        candidates = [file for file in files if file.lower().endswith((".parquet", ".json", ".jsonl"))]
+    if not candidates:
+        raise RuntimeError(f"No Parquet/JSON data files found in {dataset_id}")
+
+    for filename in candidates:
+        local_path = Path(hf_hub_download(dataset_id, filename, repo_type="dataset"))
+        if local_path.suffix.lower() == ".parquet":
+            import pyarrow.parquet as parquet
+
+            parquet_file = parquet.ParquetFile(local_path)
+            for batch in parquet_file.iter_batches(batch_size=256):
+                yield from batch.to_pylist()
+        else:
+            text = local_path.read_text(encoding="utf-8")
+            if local_path.suffix.lower() == ".json":
+                parsed = json.loads(text)
+                rows = parsed if isinstance(parsed, list) else parsed.get("data", [])
+                yield from rows
+            else:
+                for line in text.splitlines():
+                    if line.strip():
+                        yield json.loads(line)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", default="rainwagon14/CEO-Reasoning-Trace")
@@ -82,7 +121,6 @@ def main() -> None:
     parser.add_argument("--output-dir", default="training/output")
     args = parser.parse_args()
 
-    dataset = load_dataset(args.dataset, name=args.config, split=args.split, streaming=True)
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "lumiqs-sft.jsonl"
@@ -90,7 +128,7 @@ def main() -> None:
     seen: set[str] = set()
     written = 0
     with output_path.open("w", encoding="utf-8") as output:
-        for row in dataset:
+        for row in iter_raw_rows(args.dataset, args.split):
             example = to_example(dict(row))
             if not example:
                 continue
