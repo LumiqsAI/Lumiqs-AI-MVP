@@ -7,19 +7,6 @@ interface ThemeContextValue { theme: Theme; toggleTheme: () => void; }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-// Inline script to set theme before first paint (prevents flash)
-const themeScript = `
-(function(){
-  try {
-    var s = localStorage.getItem("lumiqs-theme");
-    var p = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-    document.documentElement.dataset.theme = (s === "light" || s === "dark") ? s : p;
-  } catch(e) {
-    document.documentElement.dataset.theme = "dark";
-  }
-})();
-`;
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
 
@@ -42,7 +29,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       {children}
     </ThemeContext.Provider>
   );
