@@ -3,19 +3,18 @@
 ## Stack
 - **Frontend** → Vercel
 - **Backend API** → Render
-- **Database** → Render PostgreSQL (or Supabase)
+- **Database** → MongoDB Atlas
 - **Storage** → Supabase Storage
 - **Auth** → Clerk
 
 ---
 
-## 1. Database — Render PostgreSQL
+## 1. Database — MongoDB Atlas
 
-1. Go to [render.com](https://render.com) → **New** → **PostgreSQL**
-2. Name: `lumiqs-ai-db`
-3. Plan: Free
-4. Click **Create Database**
-5. Copy the **Internal Database URL** (use this for `DATABASE_URL` in the API service)
+1. Create a MongoDB Atlas cluster and database named `lumiqs_ai`.
+2. Create a database user with least-privilege access.
+3. Restrict network access to the API host where possible.
+4. Copy the connection string for `MONGODB_URI`.
 
 ---
 
@@ -27,7 +26,7 @@
    - **Name:** `lumiqs-ai-api`
    - **Root Directory:** `apps/api`
    - **Runtime:** Node
-   - **Build Command:** `npm install && npx prisma generate && npm run build`
+   - **Build Command:** `npm install --legacy-peer-deps && npm run build`
    - **Start Command:** `node dist/main`
    - **Plan:** Free
 
@@ -37,7 +36,8 @@
 |-----|-------|
 | `NODE_ENV` | `production` |
 | `PORT` | `3001` |
-| `DATABASE_URL` | *(from Render PostgreSQL — Internal URL)* |
+| `MONGODB_URI` | *(from MongoDB Atlas)* |
+| `MONGODB_DB_NAME` | `lumiqs_ai` |
 | `AI_BASE_URL` | `https://api.groq.com/openai/v1` *(or OpenAI)* |
 | `AI_API_KEY` | *(your Groq or OpenAI key)* |
 | `AI_MODEL` | `llama-3.3-70b-versatile` *(or gpt-4o)* |
@@ -51,11 +51,6 @@
 | `CORS_ORIGIN` | *(your Vercel frontend URL, e.g. https://lumiqs-ai.vercel.app)* |
 
 5. Click **Create Web Service**
-
-> After first deploy, run the DB migration manually via Render Shell:
-> ```
-> npx prisma migrate deploy
-> ```
 
 ---
 

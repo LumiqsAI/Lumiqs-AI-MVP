@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { StrategyController } from './strategy.controller';
 import { StrategyService } from './strategy.service';
 import { AIModule } from '../ai/ai.module';
+import { Report, ReportSchema } from '../reports/report.schema';
 
 @Module({
-  imports: [AIModule],
+  imports: [
+    AIModule,
+    MongooseModule.forFeature([{ name: Report.name, schema: ReportSchema }]),
+  ],
   controllers: [StrategyController],
   providers: [StrategyService],
 })

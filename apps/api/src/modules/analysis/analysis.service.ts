@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { Report, ReportDocument, ReportType, ReportStatus } from '../reports/report.schema';
 import { AIOrchestrator } from '../ai/services/ai-orchestrator.service';
-import { ReportType, ReportStatus } from '@prisma/client';
 
 const ANALYSIS_SYSTEM_PROMPT = `You are a senior business analyst. Analyze the provided business and return a structured JSON response.
 Be analytical, specific, and practical. Label any estimates or assumptions clearly.
@@ -31,20 +32,17 @@ export class AnalysisService {
   private readonly logger = new Logger(AnalysisService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectModel(Report.name) private readonly reportModel: Model<ReportDocument>,
     private readonly orchestrator: AIOrchestrator,
   ) {}
 
   async generateAnalysis(businessId: string, userId: string) {
-    // Create report placeholder
-    const report = await this.prisma.report.create({
-      data: {
-        businessId,
-        userId,
-        type: ReportType.BUSINESS_ANALYSIS,
-        status: ReportStatus.GENERATING,
-        title: 'Business Analysis',
-      },
+    const report = await this.reportModel.create({
+      businessId: new Types.ObjectId(businessId),
+      userId: new Types.ObjectId(userId),
+      type: ReportType.BUSINESS_ANALYSIS,
+      status: ReportStatus.GENERATING,
+      title: 'Business Analysis',
     });
 
     try {
@@ -54,21 +52,19 @@ export class AnalysisService {
         'Perform a comprehensive business analysis for this company. Be specific and actionable.',
       );
 
-      const updated = await this.prisma.report.update({
-        where: { id: report.id },
-        data: {
-          status: ReportStatus.COMPLETED,
-          content: content as object,
-          summary: (content as { executiveSummary?: string }).executiveSummary || '',
+      return this.reportModel.findByIdAndUpdate(
+        report._id,
+        {
+          $set: {
+            status: ReportStatus.COMPLETED,
+            content: content as Record<string, unknown>,
+            summary: (content as { executiveSummary?: string }).executiveSummary || '',
+          },
         },
-      });
-
-      return updated;
+        { new: true },
+      ).lean();
     } catch (error) {
-      await this.prisma.report.update({
-        where: { id: report.id },
-        data: { status: ReportStatus.FAILED },
-      });
+      await this.reportModel.findByIdAndUpdate(report._id, { $set: { status: ReportStatus.FAILED } });
       throw error;
     }
   }

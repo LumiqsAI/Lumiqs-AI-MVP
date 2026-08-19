@@ -8,7 +8,7 @@ import { BusinessesService } from '../businesses/businesses.service';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { BusinessOwnerGuard } from '../../common/guards/business-owner.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { UserDocument } from '../users/user.schema';
 
 @Controller('businesses/:businessId/logo')
 @UseGuards(ClerkAuthGuard, BusinessOwnerGuard)
@@ -22,7 +22,7 @@ export class StorageController {
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }))
   async uploadLogo(
     @Param('businessId') businessId: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserDocument,
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (!file) throw new BadRequestException('No file provided');
@@ -30,7 +30,7 @@ export class StorageController {
 
     const path = `logos/${businessId}/${Date.now()}-${file.originalname}`;
     const url = await this.storageService.uploadFile(path, file.buffer, file.mimetype);
-    return this.businessesService.uploadLogo(businessId, user.id, url);
+    return this.businessesService.uploadLogo(businessId, user._id.toString(), url);
   }
 }
 

@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { Report, ReportDocument, ReportType, ReportStatus } from '../reports/report.schema';
+import { Competitor, CompetitorDocument } from './competitor.schema';
 import { AIOrchestrator } from '../ai/services/ai-orchestrator.service';
 import { BusinessContextService } from '../ai/services/business-context.service';
 import { OpenAIService } from '../ai/services/openai.service';
-import { ReportType, ReportStatus } from '@prisma/client';
 import { AnalyzeCompetitorDto } from './competitors.dto';
 
 const COMPETITOR_PROMPT = `You are a competitive intelligence analyst. Analyze the provided competitor in the context of the client's business.
@@ -32,7 +34,8 @@ Return JSON with this exact structure:
 @Injectable()
 export class CompetitorsService {
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectModel(Report.name) private readonly reportModel: Model<ReportDocument>,
+    @InjectModel(Competitor.name) private readonly competitorModel: Model<CompetitorDocument>,
     private readonly orchestrator: AIOrchestrator,
     private readonly contextService: BusinessContextService,
     private readonly openai: OpenAIService,
@@ -48,14 +51,12 @@ ${contextBlock}
 
 Provide competitive intelligence and strategic recommendations.`;
 
-    const report = await this.prisma.report.create({
-      data: {
-        businessId,
-        userId,
-        type: ReportType.COMPETITOR_ANALYSIS,
-        status: ReportStatus.GENERATING,
-        title: `Competitor Analysis: ${dto.competitorName}`,
-      },
+    const report = await this.reportModel.create({
+      businessId: new Types.ObjectId(businessId),
+      userId: new Types.ObjectId(userId),
+      type: ReportType.COMPETITOR_ANALYSIS,
+      status: ReportStatus.GENERATING,
+      title: `Competitor Analysis: ${dto.competitorName}`,
     });
 
     try {
@@ -64,44 +65,43 @@ Provide competitive intelligence and strategic recommendations.`;
         { role: 'user', content: userPrompt },
       ]);
 
-      // Save competitor record
-      const existing = await this.prisma.competitor.findFirst({
-        where: { businessId, name: dto.competitorName },
-      });
-      if (existing) {
-        await this.prisma.competitor.update({
-          where: { id: existing.id },
-          data: { analysis: content as object, website: dto.website },
-        });
-      } else {
-        await this.prisma.competitor.create({
-          data: {
-            businessId,
-            name: dto.competitorName,
+      await this.competitorModel.findOneAndUpdate(
+        { businessId: new Types.ObjectId(businessId), name: dto.competitorName },
+        {
+          $set: {
+            analysis: content as Record<string, unknown>,
             website: dto.website,
-            analysis: content as object,
+            isDeleted: false,
           },
-        });
-      }
-
-      return this.prisma.report.update({
-        where: { id: report.id },
-        data: {
-          status: ReportStatus.COMPLETED,
-          content: content as object,
-          summary: (content as { overview?: string }).overview || '',
+          $setOnInsert: {
+            businessId: new Types.ObjectId(businessId),
+            name: dto.competitorName,
+          },
         },
-      });
+        { upsert: true, new: true },
+      );
+
+      return this.reportModel.findByIdAndUpdate(
+        report._id,
+        {
+          $set: {
+            status: ReportStatus.COMPLETED,
+            content: content as Record<string, unknown>,
+            summary: (content as { overview?: string }).overview || '',
+          },
+        },
+        { new: true },
+      ).lean();
     } catch (error) {
-      await this.prisma.report.update({ where: { id: report.id }, data: { status: ReportStatus.FAILED } });
+      await this.reportModel.findByIdAndUpdate(report._id, { $set: { status: ReportStatus.FAILED } });
       throw error;
     }
   }
 
   async listCompetitors(businessId: string) {
-    return this.prisma.competitor.findMany({
-      where: { businessId, isDeleted: false },
-      orderBy: { createdAt: 'desc' },
-    });
+    return this.competitorModel
+      .find({ businessId: new Types.ObjectId(businessId), isDeleted: false })
+      .sort({ createdAt: -1 })
+      .lean();
   }
 }

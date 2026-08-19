@@ -4,7 +4,7 @@ import { CreateInsightDto } from './insights.dto';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { BusinessOwnerGuard } from '../../common/guards/business-owner.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { UserDocument } from '../users/user.schema';
 
 @Controller()
 @UseGuards(ClerkAuthGuard)
@@ -15,21 +15,21 @@ export class InsightsController {
   @UseGuards(BusinessOwnerGuard)
   create(
     @Param('businessId') businessId: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserDocument,
     @Body() dto: CreateInsightDto,
   ) {
-    return this.service.create(businessId, user.id, dto);
+    return this.service.create(businessId, user._id.toString(), dto);
   }
 
   @Get('businesses/:businessId/insights')
   @UseGuards(BusinessOwnerGuard)
-  findAll(@Param('businessId') businessId: string, @CurrentUser() user: User) {
-    return this.service.findAll(businessId, user.id);
+  findAll(@Param('businessId') businessId: string, @CurrentUser() user: UserDocument) {
+    return this.service.findAll(businessId, user._id.toString());
   }
 
   @Delete('insights/:id')
-  remove(@Param('id') id: string, @CurrentUser() user: User) {
-    return this.service.remove(id, user.id);
+  remove(@Param('id') id: string, @CurrentUser() user: UserDocument) {
+    return this.service.remove(id, user._id.toString());
   }
 }
 

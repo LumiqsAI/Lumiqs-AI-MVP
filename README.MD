@@ -12,7 +12,7 @@ Lumiqs AI is a full-stack SaaS platform that gives entrepreneurs, founders, and 
 |---|---|
 | Frontend | Next.js 15, React 19, TypeScript, Tailwind CSS v4, Framer Motion |
 | Backend | NestJS 11, TypeScript, REST API |
-| Database | MongoDB Atlas + Prisma ORM |
+| Database | MongoDB Atlas + Mongoose |
 | Auth | Clerk (JWT-based, server-side verification) |
 | AI | Ollama local models (Qwen3, streaming) |
 | Storage | Supabase Storage |
@@ -30,7 +30,7 @@ lumiqs-ai/
 ├── packages/
 │   ├── ai/           # Shared AI prompt templates & types
 │   ├── config/       # Shared configuration
-│   ├── database/     # Prisma schema & seed data
+│   ├── database/     # Shared database utilities and seed data
 │   ├── types/        # Shared TypeScript types
 │   └── validation/   # Shared Zod schemas
 └── docs/
@@ -69,7 +69,8 @@ cp apps/web/.env.local.example apps/web/.env.local
 
 ```env
 # apps/api/.env
-DATABASE_URL="mongodb+srv://<username>:<password>@<cluster>.mongodb.net/lumiqs_ai?retryWrites=true&w=majority"
+MONGODB_URI="mongodb+srv://<username>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority"
+MONGODB_DB_NAME="lumiqs_ai"
 AI_BASE_URL="http://localhost:11434/v1"
 AI_API_KEY="ollama"
 AI_MODEL="qwen3:4b"
@@ -96,12 +97,6 @@ NEXT_PUBLIC_API_URL="http://localhost:3001"
 
 ```bash
 cd apps/api
-
-# Sync collections and indexes to MongoDB Atlas
-npx prisma db push
-
-# Generate Prisma client
-npx prisma generate
 
 # (Optional) Seed with demo data
 npx ts-node ../../packages/database/prisma/seed.ts

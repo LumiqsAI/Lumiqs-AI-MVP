@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { BusinessesModule } from './modules/businesses/businesses.module';
@@ -16,7 +17,6 @@ import { InsightsModule } from './modules/insights/insights.module';
 import { MemoryModule } from './modules/memory/memory.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { HealthModule } from './modules/health/health.module';
-import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -27,7 +27,7 @@ import { PrismaModule } from './prisma/prisma.module';
         limit: parseInt(process.env.THROTTLE_LIMIT || '100'),
       },
     ]),
-    PrismaModule,
+    DatabaseModule,
     AuthModule,
     UsersModule,
     BusinessesModule,

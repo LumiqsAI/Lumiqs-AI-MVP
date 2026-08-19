@@ -5,7 +5,7 @@ import { ChatDto } from './ai.dto';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { BusinessOwnerGuard } from '../../common/guards/business-owner.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { UserDocument } from '../users/user.schema';
 import { Throttle } from '@nestjs/throttler';
 
 @Controller('businesses/:businessId/ai')
@@ -18,12 +18,12 @@ export class AIController {
   @Throttle({ default: { ttl: 60000, limit: 20 } })
   async chat(
     @Param('businessId') businessId: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserDocument,
     @Body() dto: ChatDto,
     @Res() res: Response,
   ) {
     await this.orchestrator.chat(
-      user.id,
+      user._id.toString(),
       businessId,
       dto.message,
       dto.conversationId,

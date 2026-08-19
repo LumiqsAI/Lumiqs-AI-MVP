@@ -1,28 +1,35 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { Insight, InsightDocument } from './insight.schema';
 import { CreateInsightDto } from './insights.dto';
 
 @Injectable()
 export class InsightsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectModel(Insight.name) private readonly insightModel: Model<InsightDocument>,
+  ) {}
 
   async create(businessId: string, userId: string, dto: CreateInsightDto) {
-    return this.prisma.insight.create({
-      data: { ...dto, businessId, userId, tags: dto.tags || [] },
+    return this.insightModel.create({
+      ...dto,
+      businessId: new Types.ObjectId(businessId),
+      userId: new Types.ObjectId(userId),
     });
   }
 
   async findAll(businessId: string, userId: string) {
-    return this.prisma.insight.findMany({
-      where: { businessId, userId, isDeleted: false },
-      orderBy: { createdAt: 'desc' },
-    });
+    return this.insightModel
+      .find({ businessId: new Types.ObjectId(businessId), userId: new Types.ObjectId(userId), isDeleted: false })
+      .sort({ createdAt: -1 })
+      .lean();
   }
 
   async remove(id: string, userId: string) {
-    const insight = await this.prisma.insight.findFirst({ where: { id } });
+    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Insight not found');
+    const insight = await this.insightModel.findById(id).lean();
     if (!insight) throw new NotFoundException('Insight not found');
-    if (insight.userId !== userId) throw new ForbiddenException('Access denied');
-    return this.prisma.insight.update({ where: { id }, data: { isDeleted: true } });
+    if (insight.userId.toString() !== userId) throw new ForbiddenException('Access denied');
+    return this.insightModel.findByIdAndUpdate(id, { $set: { isDeleted: true } }, { new: true }).lean();
   }
 }

@@ -4,7 +4,8 @@ import { UpdateTaskStatusDto } from './execution.dto';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { BusinessOwnerGuard } from '../../common/guards/business-owner.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { UserDocument } from '../users/user.schema';
+import { TaskStatus } from './execution.schema';
 
 @Controller('businesses/:businessId')
 @UseGuards(ClerkAuthGuard, BusinessOwnerGuard)
@@ -12,8 +13,8 @@ export class ExecutionController {
   constructor(private readonly service: ExecutionService) {}
 
   @Post('execution-plan')
-  generate(@Param('businessId') businessId: string, @CurrentUser() user: User) {
-    return this.service.generate(businessId, user.id);
+  generate(@Param('businessId') businessId: string, @CurrentUser() user: UserDocument) {
+    return this.service.generate(businessId, user._id.toString());
   }
 
   @Get('execution-plan/:reportId/tasks')

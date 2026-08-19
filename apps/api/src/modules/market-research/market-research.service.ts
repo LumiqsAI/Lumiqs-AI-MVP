@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { Report, ReportDocument, ReportType, ReportStatus } from '../reports/report.schema';
 import { AIOrchestrator } from '../ai/services/ai-orchestrator.service';
-import { ReportType, ReportStatus } from '@prisma/client';
 
 const MARKET_RESEARCH_PROMPT = `You are a senior market research analyst. Conduct thorough market research for the provided business.
 Do NOT fabricate specific market size numbers — label all estimates as "Estimated" or "Requires validation".
@@ -29,19 +30,17 @@ Return JSON with this exact structure:
 @Injectable()
 export class MarketResearchService {
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectModel(Report.name) private readonly reportModel: Model<ReportDocument>,
     private readonly orchestrator: AIOrchestrator,
   ) {}
 
   async generate(businessId: string, userId: string) {
-    const report = await this.prisma.report.create({
-      data: {
-        businessId,
-        userId,
-        type: ReportType.MARKET_RESEARCH,
-        status: ReportStatus.GENERATING,
-        title: 'Market Research',
-      },
+    const report = await this.reportModel.create({
+      businessId: new Types.ObjectId(businessId),
+      userId: new Types.ObjectId(userId),
+      type: ReportType.MARKET_RESEARCH,
+      status: ReportStatus.GENERATING,
+      title: 'Market Research',
     });
 
     try {
@@ -51,16 +50,19 @@ export class MarketResearchService {
         'Conduct comprehensive market research for this business. Focus on actionable insights.',
       );
 
-      return this.prisma.report.update({
-        where: { id: report.id },
-        data: {
-          status: ReportStatus.COMPLETED,
-          content: content as object,
-          summary: (content as { industryOverview?: string }).industryOverview || '',
+      return this.reportModel.findByIdAndUpdate(
+        report._id,
+        {
+          $set: {
+            status: ReportStatus.COMPLETED,
+            content: content as Record<string, unknown>,
+            summary: (content as { industryOverview?: string }).industryOverview || '',
+          },
         },
-      });
+        { new: true },
+      ).lean();
     } catch (error) {
-      await this.prisma.report.update({ where: { id: report.id }, data: { status: ReportStatus.FAILED } });
+      await this.reportModel.findByIdAndUpdate(report._id, { $set: { status: ReportStatus.FAILED } });
       throw error;
     }
   }

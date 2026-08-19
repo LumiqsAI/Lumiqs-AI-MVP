@@ -1,10 +1,13 @@
 import { Injectable, Logger, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { Business, BusinessDocument } from '../../businesses/business.schema';
+import { Conversation, ConversationDocument } from '../../conversations/conversation.schema';
+import { Message, MessageDocument, MessageRole } from '../../conversations/message.schema';
 import { OpenAIService } from './openai.service';
 import { BusinessContextService } from './business-context.service';
 import { MemoryService } from './memory.service';
 import { Response } from 'express';
-import { MessageRole } from '@prisma/client';
 
 const CONSULTANT_SYSTEM_PROMPT = `You are an experienced startup and business consultant with deep expertise in SaaS, entrepreneurship, market strategy, and business growth. You work exclusively for the business described in the context provided.
 
@@ -28,7 +31,9 @@ export class AIOrchestrator {
   private readonly logger = new Logger(AIOrchestrator.name);
 
   constructor(
-    private readonly prisma: PrismaService,
+    @InjectModel(Business.name) private readonly businessModel: Model<BusinessDocument>,
+    @InjectModel(Conversation.name) private readonly conversationModel: Model<ConversationDocument>,
+    @InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
     private readonly openai: OpenAIService,
     private readonly contextService: BusinessContextService,
     private readonly memoryService: MemoryService,
@@ -42,41 +47,41 @@ export class AIOrchestrator {
     res: Response,
   ) {
     // Verify ownership
-    const business = await this.prisma.business.findFirst({
-      where: { id: businessId, userId, isDeleted: false },
-    });
+    const business = await this.businessModel
+      .findOne({ _id: businessId, ownerId: new Types.ObjectId(userId), isDeleted: false })
+      .lean();
     if (!business) throw new ForbiddenException('Access denied');
 
     // Get or create conversation
-    let conversation = conversationId
-      ? await this.prisma.conversation.findFirst({
-          where: { id: conversationId, userId, businessId },
+    let conversation = conversationId && Types.ObjectId.isValid(conversationId)
+      ? await this.conversationModel.findOne({
+          _id: conversationId,
+          userId: new Types.ObjectId(userId),
+          businessId: new Types.ObjectId(businessId),
         })
       : null;
 
     if (!conversation) {
-      conversation = await this.prisma.conversation.create({
-        data: {
-          businessId,
-          userId,
-          title: message.substring(0, 60) + (message.length > 60 ? '...' : ''),
-        },
+      conversation = await this.conversationModel.create({
+        businessId: new Types.ObjectId(businessId),
+        userId: new Types.ObjectId(userId),
+        title: message.substring(0, 60) + (message.length > 60 ? '...' : ''),
       });
     }
 
     // Save user message
-    await this.prisma.message.create({
-      data: {
-        conversationId: conversation.id,
-        role: MessageRole.USER,
-        content: message,
-      },
+    await this.messageModel.create({
+      conversationId: conversation._id,
+      businessId: new Types.ObjectId(businessId),
+      userId: new Types.ObjectId(userId),
+      role: MessageRole.USER,
+      content: message,
     });
 
     // Build context
     const { contextBlock, recentMessages } = await this.contextService.buildContext(
       businessId,
-      conversation.id,
+      conversation._id.toString(),
     );
 
     // Build messages for OpenAI
@@ -86,9 +91,9 @@ export class AIOrchestrator {
     ];
 
     // Add conversation history (excluding the message we just saved)
-    const history = recentMessages.filter(
-      (m) => m.role !== MessageRole.SYSTEM,
-    ).slice(-20);
+    const history = recentMessages
+      .filter((m) => m.role !== MessageRole.SYSTEM)
+      .slice(-20);
 
     for (const msg of history) {
       if (msg.role === MessageRole.USER || msg.role === MessageRole.ASSISTANT) {
@@ -100,15 +105,16 @@ export class AIOrchestrator {
     }
 
     // Stream response
-    const convId = conversation.id;
+    const convId = conversation._id.toString();
+    const convOid = conversation._id;
     await this.openai.streamChat(messages, res, async (fullContent) => {
       // Save assistant message
-      await this.prisma.message.create({
-        data: {
-          conversationId: convId,
-          role: MessageRole.ASSISTANT,
-          content: fullContent,
-        },
+      await this.messageModel.create({
+        conversationId: convOid,
+        businessId: new Types.ObjectId(businessId),
+        userId: new Types.ObjectId(userId),
+        role: MessageRole.ASSISTANT,
+        content: fullContent,
       });
 
       // Extract and save memories asynchronously
@@ -117,16 +123,13 @@ export class AIOrchestrator {
         .catch((e) => this.logger.warn('Memory extraction failed', e));
 
       // Update conversation title if first exchange
-      const msgCount = await this.prisma.message.count({ where: { conversationId: convId } });
+      const msgCount = await this.messageModel.countDocuments({ conversationId: convOid });
       if (msgCount <= 2) {
-        await this.prisma.conversation.update({
-          where: { id: convId },
-          data: { title: message.substring(0, 60) },
-        });
+        await this.conversationModel.findByIdAndUpdate(convId, { $set: { title: message.substring(0, 60) } });
       }
     });
 
-    return conversation.id;
+    return convId;
   }
 
   async generateStructured(

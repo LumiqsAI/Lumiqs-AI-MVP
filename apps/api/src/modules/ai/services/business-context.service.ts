@@ -1,11 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
-import type { Business, BusinessMemory, Message } from '@prisma/client';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { Business, BusinessDocument } from '../../businesses/business.schema';
+import { BusinessMemory, BusinessMemoryDocument } from '../../memory/business-memory.schema';
+import { Message, MessageDocument } from '../../conversations/message.schema';
 
 export interface BuiltContext {
-  business: Business;
-  memories: BusinessMemory[];
-  recentMessages: Message[];
+  business: BusinessDocument;
+  memories: BusinessMemoryDocument[];
+  recentMessages: MessageDocument[];
   contextBlock: string;
 }
 
@@ -13,22 +16,22 @@ export interface BuiltContext {
 export class BusinessContextService {
   private readonly logger = new Logger(BusinessContextService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectModel(Business.name) private readonly businessModel: Model<BusinessDocument>,
+    @InjectModel(BusinessMemory.name) private readonly memoryModel: Model<BusinessMemoryDocument>,
+    @InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
+  ) {}
 
   async buildContext(businessId: string, conversationId?: string): Promise<BuiltContext> {
+    const oid = new Types.ObjectId(businessId);
     const [business, memories, recentMessages] = await Promise.all([
-      this.prisma.business.findUniqueOrThrow({ where: { id: businessId } }),
-      this.prisma.businessMemory.findMany({
-        where: { businessId, isActive: true },
-        orderBy: { importance: 'desc' },
-        take: 10,
-      }),
-      conversationId
-        ? this.prisma.message.findMany({
-            where: { conversationId },
-            orderBy: { createdAt: 'asc' },
-            take: 20,
-          })
+      this.businessModel.findById(oid).orFail(),
+      this.memoryModel.find({ businessId: oid, isActive: true }).sort({ importance: -1 }).limit(10),
+      conversationId && Types.ObjectId.isValid(conversationId)
+        ? this.messageModel
+            .find({ conversationId: new Types.ObjectId(conversationId) })
+            .sort({ createdAt: 1 })
+            .limit(20)
         : Promise.resolve([]),
     ]);
 
@@ -36,7 +39,7 @@ export class BusinessContextService {
     return { business, memories, recentMessages, contextBlock };
   }
 
-  private buildContextBlock(business: Business, memories: BusinessMemory[]): string {
+  private buildContextBlock(business: BusinessDocument, memories: BusinessMemoryDocument[]): string {
     const lines = [
       '## Business Context',
       '',
@@ -58,7 +61,7 @@ export class BusinessContextService {
     if (memories.length > 0) {
       lines.push('', '## Business Memory', '');
       memories.forEach((m, i) => {
-        lines.push(`${i + 1}. [${m.type}] ${m.content}`);
+        lines.push(`${i + 1}. [${m.type}] ${m.value}`);
       });
     }
 

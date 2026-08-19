@@ -6,7 +6,7 @@ import { CreateBusinessDto, UpdateBusinessDto } from './businesses.dto';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { BusinessOwnerGuard } from '../../common/guards/business-owner.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { UserDocument } from '../users/user.schema';
 
 @Controller('businesses')
 @UseGuards(ClerkAuthGuard)
@@ -14,35 +14,35 @@ export class BusinessesController {
   constructor(private readonly businessesService: BusinessesService) {}
 
   @Post()
-  create(@CurrentUser() user: User, @Body() dto: CreateBusinessDto) {
-    return this.businessesService.create(user.id, dto);
+  create(@CurrentUser() user: UserDocument, @Body() dto: CreateBusinessDto) {
+    return this.businessesService.create(user._id.toString(), dto);
   }
 
   @Get()
-  findAll(@CurrentUser() user: User) {
-    return this.businessesService.findAllByUser(user.id);
+  findAll(@CurrentUser() user: UserDocument) {
+    return this.businessesService.findAllByUser(user._id.toString());
   }
 
   @Get(':id')
   @UseGuards(BusinessOwnerGuard)
-  findOne(@Param('id') id: string, @CurrentUser() user: User) {
-    return this.businessesService.findOne(id, user.id);
+  findOne(@Param('id') id: string, @CurrentUser() user: UserDocument) {
+    return this.businessesService.findOne(id, user._id.toString());
   }
 
   @Patch(':id')
   @UseGuards(BusinessOwnerGuard)
   update(
     @Param('id') id: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserDocument,
     @Body() dto: UpdateBusinessDto,
   ) {
-    return this.businessesService.update(id, user.id, dto);
+    return this.businessesService.update(id, user._id.toString(), dto);
   }
 
   @Delete(':id')
   @UseGuards(BusinessOwnerGuard)
-  remove(@Param('id') id: string, @CurrentUser() user: User) {
-    return this.businessesService.remove(id, user.id);
+  remove(@Param('id') id: string, @CurrentUser() user: UserDocument) {
+    return this.businessesService.remove(id, user._id.toString());
   }
 }
 

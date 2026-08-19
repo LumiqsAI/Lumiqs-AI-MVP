@@ -5,8 +5,10 @@ import {
   UnauthorizedException,
   Logger,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { createClerkClient } from '@clerk/backend';
-import { PrismaService } from '../../prisma/prisma.service';
+import { User, UserDocument } from '../../modules/users/user.schema';
 
 @Injectable()
 export class ClerkAuthGuard implements CanActivate {
@@ -15,7 +17,9 @@ export class ClerkAuthGuard implements CanActivate {
     secretKey: process.env.CLERK_SECRET_KEY,
   });
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -52,18 +56,15 @@ export class ClerkAuthGuard implements CanActivate {
       const clerkId = requestState.toAuth().userId;
       if (!clerkId) throw new UnauthorizedException('No user ID in token');
 
-      let user = await this.prisma.user.findUnique({ where: { clerkId } });
+      let user = await this.userModel.findOne({ authProviderId: clerkId });
 
       if (!user) {
         const clerkUser = await this.clerk.users.getUser(clerkId);
-        user = await this.prisma.user.create({
-          data: {
-            clerkId,
-            email: clerkUser.emailAddresses[0]?.emailAddress || '',
-            firstName: clerkUser.firstName || undefined,
-            lastName: clerkUser.lastName || undefined,
-            avatarUrl: clerkUser.imageUrl || undefined,
-          },
+        user = await this.userModel.create({
+          authProviderId: clerkId,
+          email: clerkUser.emailAddresses[0]?.emailAddress || '',
+          name: [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || undefined,
+          avatarUrl: clerkUser.imageUrl || undefined,
         });
       }
 

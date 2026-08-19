@@ -4,7 +4,7 @@ import { AnalyzeCompetitorDto } from './competitors.dto';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { BusinessOwnerGuard } from '../../common/guards/business-owner.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { UserDocument } from '../users/user.schema';
 
 @Controller('businesses/:businessId/competitors')
 @UseGuards(ClerkAuthGuard, BusinessOwnerGuard)
@@ -19,10 +19,10 @@ export class CompetitorsController {
   @Post('analyze')
   analyze(
     @Param('businessId') businessId: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: UserDocument,
     @Body() dto: AnalyzeCompetitorDto,
   ) {
-    return this.service.analyze(businessId, user.id, dto);
+    return this.service.analyze(businessId, user._id.toString(), dto);
   }
 }
 

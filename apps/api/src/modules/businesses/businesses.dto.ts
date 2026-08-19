@@ -1,7 +1,7 @@
 import {
   IsString, IsOptional, IsEnum, IsUrl, MaxLength, MinLength,
 } from 'class-validator';
-import { BusinessStage } from '@prisma/client';
+import { BusinessStage } from './business.schema';
 
 export class CreateBusinessDto {
   @IsString()

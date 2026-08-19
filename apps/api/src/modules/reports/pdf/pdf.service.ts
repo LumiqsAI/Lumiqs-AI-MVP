@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { Report } from '@prisma/client';
+import type { ReportDocument } from '../report.schema';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const PDFDocument = require('pdfkit');
 
@@ -7,7 +7,7 @@ const PDFDocument = require('pdfkit');
 export class PdfService {
   private readonly logger = new Logger(PdfService.name);
 
-  async generateReportPdf(report: Report, businessName: string): Promise<Buffer> {
+  async generateReportPdf(report: ReportDocument, businessName: string): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({ margin: 50, size: 'A4' });
       const chunks: Buffer[] = [];
@@ -25,7 +25,11 @@ export class PdfService {
       doc.fontSize(10).font('Helvetica').fillColor('#94a3b8')
         .text('AI-Powered Business Intelligence', 50, 52);
       doc.fillColor('#ffffff').fontSize(10)
-        .text(`Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 0, 52, { align: 'right', width: doc.page.width - 50 });
+        .text(
+          `Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+          0, 52,
+          { align: 'right', width: doc.page.width - 50 },
+        );
 
       doc.moveDown(3);
 
@@ -36,7 +40,6 @@ export class PdfService {
         .text(businessName, { align: 'center' });
       doc.moveDown(0.5);
 
-      // Divider
       doc.moveTo(50, doc.y).lineTo(doc.page.width - 50, doc.y).strokeColor('#e2e8f0').lineWidth(1).stroke();
       doc.moveDown(1);
 
@@ -54,7 +57,7 @@ export class PdfService {
         doc.moveDown(1);
       }
 
-      // ── Dynamic sections ────────────────────────────────────
+      // ── Dynamic array sections ───────────────────────────────
       const arraySections: Record<string, string> = {
         strengths: 'Strengths',
         weaknesses: 'Weaknesses',
@@ -95,8 +98,8 @@ export class PdfService {
         doc.moveDown(0.8);
       }
 
-      // ── Strategy sections ───────────────────────────────────
-      const strategySections = ['revenueStrategy', 'pricingStrategy', 'marketingStrategy', 'salesStrategy', 'growthStrategy'];
+      // ── Strategy sections ────────────────────────────────────
+      const strategyKeys = ['revenueStrategy', 'pricingStrategy', 'marketingStrategy', 'salesStrategy', 'growthStrategy'];
       const strategyLabels: Record<string, string> = {
         revenueStrategy: 'Revenue Strategy',
         pricingStrategy: 'Pricing Strategy',
@@ -105,7 +108,7 @@ export class PdfService {
         growthStrategy: 'Growth Strategy',
       };
 
-      for (const key of strategySections) {
+      for (const key of strategyKeys) {
         const val = content[key] as Record<string, unknown> | undefined;
         if (!val) continue;
         this.sectionHeader(doc, strategyLabels[key]);
@@ -117,8 +120,13 @@ export class PdfService {
         doc.moveDown(0.8);
       }
 
-      // ── Execution weeks ─────────────────────────────────────
-      const weeks = content.weeks as Array<{ week: number; focus: string; tasks: Array<{ title: string; priority?: string; outcome?: string }> }> | undefined;
+      // ── Execution weeks ──────────────────────────────────────
+      const weeks = content.weeks as Array<{
+        week: number;
+        focus: string;
+        tasks: Array<{ title: string; priority?: string }>;
+      }> | undefined;
+
       if (weeks?.length) {
         this.sectionHeader(doc, 'Execution Roadmap');
         for (const w of weeks) {
@@ -132,10 +140,9 @@ export class PdfService {
       }
 
       // ── Footer ───────────────────────────────────────────────
-      const pageCount = (doc as unknown as { _pageBuffer: unknown[] })._pageBuffer?.length || 1;
       doc.fontSize(9).fillColor('#94a3b8').font('Helvetica')
         .text(
-          `Lumiqs AI — Confidential Business Report — Page 1 of ${pageCount}`,
+          'Lumiqs AI — Confidential Business Report',
           50,
           doc.page.height - 40,
           { align: 'center', width: doc.page.width - 100 },
@@ -153,4 +160,3 @@ export class PdfService {
     doc.moveDown(0.5);
   }
 }
-
