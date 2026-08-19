@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -32,6 +32,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
   const [businessId, setBusinessId] = useState<string>("");
   const searchParams = useSearchParams();
   const { getToken } = useAuth();
+  const { user } = useUser();
   const api = useApiClient();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -290,18 +291,25 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
                 key={msg.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={cn("flex gap-3 max-w-3xl", msg.role === "USER" ? "ml-auto flex-row-reverse" : "")}
+                className={cn("group flex gap-3 max-w-3xl", msg.role === "USER" ? "ml-auto flex-row-reverse" : "")}
               >
                 <div className={cn(
                   "w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 overflow-hidden",
                   msg.role === "USER" ? "bg-indigo-600/30" : "bg-slate-800",
                 )}>
-                  {msg.role === "USER" ? <User className="h-3.5 w-3.5 text-indigo-300" /> : <img src="/logo.png" alt="Lumiqs" className="w-5 h-5 object-contain" />}
+                  {msg.role === "USER"
+                    ? user?.imageUrl
+                      ? <img src={user.imageUrl} alt={user.fullName || "Your profile"} className="h-full w-full object-cover" />
+                      : <User className="h-3.5 w-3.5 text-indigo-300" aria-label="You" />
+                    : <Bot className="h-4 w-4 text-indigo-300" aria-label="Lumiqs AI" />}
                 </div>
                 <div className={cn(
                   "flex-1 min-w-0",
                   msg.role === "USER" ? "bg-indigo-600/15 border border-indigo-500/20 rounded-2xl rounded-tr-sm px-4 py-3" : "",
                 )}>
+                  <p className={cn("mb-1 text-xs font-medium", msg.role === "USER" ? "text-indigo-200" : "text-slate-500")}>
+                    {msg.role === "USER" ? "You" : "Lumiqs AI"}
+                  </p>
                   {msg.role === "USER" ? (
                     <p className="text-sm text-white">{msg.content}</p>
                   ) : (
@@ -327,8 +335,8 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
           {/* Streaming */}
           {streaming && streamingContent && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 max-w-3xl">
-              <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5 overflow-hidden">
-                <img src="/logo.png" alt="Lumiqs" className="w-5 h-5 object-contain" />
+              <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Bot className="h-4 w-4 text-indigo-300" aria-label="Lumiqs AI" />
               </div>
               <div className="flex-1 prose text-sm max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingContent}</ReactMarkdown>
@@ -339,8 +347,8 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
 
           {streaming && !streamingContent && (
             <div className="flex gap-3 max-w-3xl">
-              <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                <img src="/logo.png" alt="Lumiqs" className="w-5 h-5 object-contain" />
+              <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0">
+                <Bot className="h-4 w-4 text-indigo-300" aria-label="Lumiqs AI" />
               </div>
               <div className="flex items-center gap-1 py-2">
                 {[0, 1, 2].map((i) => (
