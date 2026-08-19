@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { ThemeToggle } from "../theme-toggle";
 
 const MAIN_NAV = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -44,9 +45,12 @@ export function Sidebar() {
         onClick={() => setMobileOpen(false)}
         className={cn(
           "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
-          active ? "bg-indigo-600/20 text-indigo-300" : "text-slate-400 hover:text-white hover:bg-white/5",
           collapsed && "justify-center px-2",
         )}
+        style={active
+          ? { background: "rgba(99,102,241,.15)", color: "#a5b4fc" }
+          : { color: "var(--muted-fg)" }
+        }
       >
         <Icon className="h-4 w-4 flex-shrink-0" />
         {!collapsed && <span>{label}</span>}
@@ -56,11 +60,17 @@ export function Sidebar() {
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      <div className={cn("flex items-center gap-3 px-4 py-5 border-b border-white/8", collapsed && "justify-center px-2")}>
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center flex-shrink-0">
+      <div
+        className={cn("flex items-center gap-3 px-4 py-5", collapsed && "justify-center px-2")}
+        style={{ borderBottom: "1px solid var(--line)" }}
+      >
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", boxShadow: "0 0 16px var(--accent-glow)" }}
+        >
           <span className="text-white font-bold text-sm">L</span>
         </div>
-        {!collapsed && <span className="font-semibold text-white text-sm">Lumiqs AI</span>}
+        {!collapsed && <span className="font-semibold text-sm" style={{ color: "var(--page-fg)" }}>Lumiqs AI</span>}
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
@@ -68,25 +78,36 @@ export function Sidebar() {
 
         {businessNav.length > 0 && (
           <>
-            {!collapsed && <div className="px-3 pt-4 pb-1"><p className="text-xs font-medium text-slate-600 uppercase tracking-wider">Business</p></div>}
-            {collapsed && <div className="border-t border-white/8 my-2" />}
+            {!collapsed && (
+              <div className="px-3 pt-4 pb-1">
+                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--muted-fg)", opacity: 0.6 }}>Business</p>
+              </div>
+            )}
+            {collapsed && <div className="my-2" style={{ borderTop: "1px solid var(--line)" }} />}
             {businessNav.map((item) => <NavLink key={item.href} {...item} />)}
           </>
         )}
       </nav>
 
-      <div className={cn("border-t border-white/8 p-3 flex items-center gap-3", collapsed && "justify-center")}>
+      <div
+        className={cn("p-3 flex items-center gap-3", collapsed && "justify-center")}
+        style={{ borderTop: "1px solid var(--line)" }}
+      >
         <UserButton afterSignOutUrl="/" />
         {!collapsed && (
-          <Link href="/settings" className="text-slate-400 hover:text-white transition-colors">
-            <Settings className="h-4 w-4" />
-          </Link>
+          <>
+            <Link href="/settings" aria-label="Settings" className="transition-colors hover:text-indigo-400" style={{ color: "var(--muted-fg)" }}>
+              <Settings className="h-4 w-4" />
+            </Link>
+            <ThemeToggle compact />
+          </>
         )}
       </div>
 
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 rounded-full bg-slate-800 border border-white/10 items-center justify-center text-slate-400 hover:text-white transition-colors z-10"
+        className="hidden lg:flex absolute -right-3 top-20 w-6 h-6 rounded-full items-center justify-center transition-colors z-10"
+        style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--muted-fg)" }}
       >
         {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
       </button>
@@ -97,7 +118,8 @@ export function Sidebar() {
     <>
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-9 h-9 rounded-lg bg-slate-900 border border-white/10 flex items-center justify-center text-slate-400"
+        className="lg:hidden fixed top-4 left-4 z-50 w-9 h-9 rounded-lg flex items-center justify-center"
+        style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--muted-fg)" }}
       >
         <Menu className="h-4 w-4" />
       </button>
@@ -113,14 +135,18 @@ export function Sidebar() {
         {mobileOpen && (
           <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="lg:hidden fixed left-0 top-0 bottom-0 z-50 w-64 bg-slate-950 border-r border-white/8">
+            className="lg:hidden fixed left-0 top-0 bottom-0 z-50 w-64"
+            style={{ background: "var(--sidebar-bg)", borderRight: "1px solid var(--line)" }}>
             <button onClick={() => setMobileOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="h-4 w-4" /></button>
             <SidebarContent />
           </motion.aside>
         )}
       </AnimatePresence>
 
-      <aside className={cn("hidden lg:flex flex-col relative h-screen sticky top-0 bg-slate-950 border-r border-white/8 transition-all duration-200 flex-shrink-0", collapsed ? "w-16" : "w-56")}>
+      <aside
+        className={cn("hidden lg:flex flex-col relative h-screen sticky top-0 transition-all duration-200 flex-shrink-0", collapsed ? "w-16" : "w-56")}
+        style={{ background: "var(--sidebar-bg)", borderRight: "1px solid var(--line)" }}
+      >
         <SidebarContent />
       </aside>
     </>

@@ -1,24 +1,176 @@
 @import "tailwindcss";
 
+/* ── Dark theme (default) ─────────────────────────────────────── */
 :root {
   --font-inter: "Inter", sans-serif;
+  --page-bg: #020617;
+  --page-bg2: #0b1120;
+  --page-fg: #f8fafc;
+  --muted-fg: #94a3b8;
+  --surface: rgba(15, 23, 42, 0.82);
+  --surface-raised: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.07);
+  --line: rgba(148, 163, 184, 0.14);
+  --line-strong: rgba(148, 163, 184, 0.22);
+  --accent: #6366f1;
+  --accent-hover: #818cf8;
+  --accent-glow: rgba(99, 102, 241, 0.25);
+  --card-bg: rgba(15, 23, 42, 0.7);
+  --card-border: rgba(148, 163, 184, 0.1);
+  --badge-bg: rgba(99, 102, 241, 0.15);
+  --badge-fg: #a5b4fc;
+  --hero-gradient: radial-gradient(ellipse 80% 50% at 60% -10%, rgba(99,102,241,.28) 0%, transparent 60%),
+                   radial-gradient(ellipse 50% 40% at 90% 80%, rgba(139,92,246,.15) 0%, transparent 55%),
+                   linear-gradient(160deg, #020617 0%, #080f1f 50%, #0d1424 100%);
+  --nav-bg: rgba(2, 6, 23, 0.88);
+  --sidebar-bg: #060d1a;
+  --toggle-bg: rgba(30, 41, 59, 0.9);
+  --toggle-indicator: #1e293b;
 }
 
-* {
-  box-sizing: border-box;
+/* ── Light theme ──────────────────────────────────────────────── */
+html[data-theme="light"] {
+  --page-bg: #f0f4ff;
+  --page-bg2: #e8eef8;
+  --page-fg: #0f172a;
+  --muted-fg: #475569;
+  --surface: rgba(255, 255, 255, 0.95);
+  --surface-raised: rgba(255, 255, 255, 0.8);
+  --surface-hover: rgba(238, 242, 255, 0.9);
+  --line: rgba(99, 102, 241, 0.12);
+  --line-strong: rgba(99, 102, 241, 0.22);
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-glow: rgba(79, 70, 229, 0.18);
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-border: rgba(99, 102, 241, 0.14);
+  --badge-bg: rgba(79, 70, 229, 0.1);
+  --badge-fg: #4338ca;
+  --hero-gradient: radial-gradient(ellipse 80% 50% at 60% -10%, rgba(99,102,241,.14) 0%, transparent 60%),
+                   radial-gradient(ellipse 50% 40% at 90% 80%, rgba(139,92,246,.08) 0%, transparent 55%),
+                   linear-gradient(160deg, #eef2ff 0%, #f0f4ff 50%, #f5f3ff 100%);
+  --nav-bg: rgba(240, 244, 255, 0.92);
+  --sidebar-bg: #f8faff;
+  --toggle-bg: rgba(224, 231, 255, 0.9);
+  --toggle-indicator: #ffffff;
 }
+
+* { box-sizing: border-box; }
 
 body {
   font-family: var(--font-inter);
+  min-height: 100vh;
+  background: var(--page-bg);
+  color: var(--page-fg);
+  transition: background-color 220ms ease, color 220ms ease;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+/* ── App shell ────────────────────────────────────────────────── */
+.app-shell { background: var(--page-bg); color: var(--page-fg); }
 
-/* Prose for markdown */
+/* ── Theme toggle pill ────────────────────────────────────────── */
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  min-height: 2.1rem;
+  padding: .3rem .65rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 9999px;
+  background: var(--toggle-bg);
+  color: var(--muted-fg);
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .01em;
+  backdrop-filter: blur(8px);
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  cursor: pointer;
+}
+.theme-toggle:hover {
+  color: var(--page-fg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.theme-toggle .toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: var(--accent-glow);
+  color: var(--accent);
+  transition: background 160ms ease, color 160ms ease;
+}
+.theme-toggle:hover .toggle-icon {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── Glassmorphism card ───────────────────────────────────────── */
+.glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ── Gradient text ────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 50%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glow button ──────────────────────────────────────────────── */
+.btn-glow {
+  box-shadow: 0 0 20px var(--accent-glow), 0 4px 15px rgba(0,0,0,.2);
+  transition: box-shadow 200ms ease, transform 150ms ease;
+}
+.btn-glow:hover {
+  box-shadow: 0 0 32px var(--accent-glow), 0 6px 20px rgba(0,0,0,.25);
+  transform: translateY(-1px);
+}
+
+/* ── Animated gradient border ─────────────────────────────────── */
+@keyframes border-spin {
+  to { --angle: 360deg; }
+}
+
+/* ── Light theme overrides for Tailwind utility classes ───────── */
+html[data-theme="light"] .bg-slate-950 { background-color: var(--page-bg) !important; }
+html[data-theme="light"] .bg-slate-950\/50 { background-color: rgba(240, 244, 255, .72) !important; }
+html[data-theme="light"] .bg-slate-900, html[data-theme="light"] .bg-slate-900\/90 { background-color: #ffffff !important; }
+html[data-theme="light"] .bg-slate-900\/50 { background-color: rgba(255,255,255,.7) !important; }
+html[data-theme="light"] .bg-slate-800 { background-color: #e8edf5 !important; }
+html[data-theme="light"] .bg-white\/3, html[data-theme="light"] .bg-white\/\[\.025\], html[data-theme="light"] .bg-white\/\[\.03\] { background-color: rgba(255, 255, 255, .86) !important; }
+html[data-theme="light"] .bg-white\/5 { background-color: rgba(99,102,241,.06) !important; }
+html[data-theme="light"] .border-white\/8, html[data-theme="light"] .border-white\/10, html[data-theme="light"] .border-white\/15 { border-color: var(--line) !important; }
+html[data-theme="light"] .border-white\/5 { border-color: rgba(99,102,241,.1) !important; }
+html[data-theme="light"] .text-white { color: #0f172a !important; }
+html[data-theme="light"] .text-slate-300 { color: #334155 !important; }
+html[data-theme="light"] .text-slate-400 { color: #475569 !important; }
+html[data-theme="light"] .text-slate-500 { color: #64748b !important; }
+html[data-theme="light"] .text-slate-600, html[data-theme="light"] .text-slate-700 { color: #94a3b8 !important; }
+html[data-theme="light"] .hover\:text-white:hover { color: #0f172a !important; }
+html[data-theme="light"] .hover\:bg-white\/5:hover { background-color: rgba(99,102,241,.08) !important; }
+html[data-theme="light"] input, html[data-theme="light"] textarea, html[data-theme="light"] select { color: #0f172a; background: #fff; border-color: var(--line-strong); }
+html[data-theme="light"] .prose { color: #334155; }
+html[data-theme="light"] .prose h1, html[data-theme="light"] .prose h2, html[data-theme="light"] .prose h3, html[data-theme="light"] .prose strong { color: #0f172a; }
+html[data-theme="light"] .prose code { background: #e8edf5; color: #4f46e5; }
+html[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, .2); }
+html[data-theme="light"] .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(99,102,241,.15) !important; }
+html[data-theme="light"] .shadow-indigo-950\/40 { box-shadow: 0 20px 40px -10px rgba(79,70,229,.12) !important; }
+
+/* ── Custom scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.4); }
+
+/* ── Prose / markdown ─────────────────────────────────────────── */
 .prose { color: #cbd5e1; }
 .prose h1, .prose h2, .prose h3 { color: #f1f5f9; font-weight: 600; margin-top: 1.5em; margin-bottom: 0.5em; }
 .prose h1 { font-size: 1.5rem; }

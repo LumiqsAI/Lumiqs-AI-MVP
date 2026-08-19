@@ -11,11 +11,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "md", loading, children, disabled, ...props }, ref) => {
     const base = "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none";
     const variants = {
-      default: "bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm",
-      outline: "border border-white/10 text-slate-300 hover:bg-white/5 hover:text-white",
-      ghost: "text-slate-400 hover:text-white hover:bg-white/5",
+      default: "bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm btn-glow",
+      outline: "border text-sm transition-colors hover:text-indigo-400",
+      ghost: "hover:text-indigo-400",
       destructive: "bg-red-600/20 text-red-400 border border-red-500/20 hover:bg-red-600/30",
-      secondary: "bg-white/5 text-slate-300 hover:bg-white/10",
+      secondary: "text-sm transition-colors",
     };
     const sizes = {
       sm: "h-8 px-3 text-xs",

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { Building2, FileText, Bot, Plus, ArrowRight, TrendingUp } from "lucide-react";
+import { Building2, FileText, Bot, Plus, ArrowRight, TrendingUp, Sparkles, Compass, Search, Rocket } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,11 +17,20 @@ export function DashboardClient({ initialData }: { initialData: DashboardData | 
   const firstName = user?.firstName || "there";
 
   return (
-    <div className="p-6 lg:p-8 max-w-6xl mx-auto">
+    <div className="relative mx-auto max-w-6xl p-6 lg:p-8">
+      <div className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-2xl font-semibold text-white">Good morning, {firstName} 👋</h1>
-        <p className="text-slate-400 mt-1">Here&apos;s what&apos;s happening with your businesses.</p>
+        <div className="mb-5 flex flex-wrap items-center gap-2 text-xs text-slate-500"><span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/20 bg-indigo-400/10 px-2.5 py-1 text-indigo-300"><Sparkles className="h-3.5 w-3.5" /> Decision workspace</span><span>Today&apos;s view</span></div>
+        <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><h1 className="text-3xl font-semibold tracking-tight text-white">Good morning, {firstName}.</h1><p className="mt-2 max-w-xl text-slate-400">A clear view of your businesses, decisions, and the next useful move.</p></div><Link href="/businesses/new"><Button><Plus className="h-4 w-4" /> New business</Button></Link></div>
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} className="mb-8 grid gap-3 md:grid-cols-3">
+        {[
+          { icon: Compass, title: "Ask your consultant", text: "Pressure-test a decision with business context.", href: data?.businesses[0] ? `/businesses/${data.businesses[0].id}/ai` : "/businesses/new" },
+          { icon: Search, title: "Explore a market", text: "Turn uncertainty into a focused research brief.", href: data?.businesses[0] ? `/businesses/${data.businesses[0].id}/market-research` : "/businesses/new" },
+          { icon: Rocket, title: "Build momentum", text: "Convert a strategy into this month's priorities.", href: data?.businesses[0] ? `/businesses/${data.businesses[0].id}/execution` : "/businesses/new" },
+        ].map((action) => <Link key={action.title} href={action.href} className="group flex items-start gap-3 border border-white/10 bg-white/[.025] p-4 transition-all hover:-translate-y-0.5 hover:border-indigo-300/30 hover:bg-indigo-300/[.06]"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-300"><action.icon className="h-4 w-4" /></span><span className="min-w-0"><span className="flex items-center gap-2 text-sm font-medium text-white">{action.title}<ArrowRight className="h-3.5 w-3.5 text-slate-600 transition-transform group-hover:translate-x-1 group-hover:text-indigo-300" /></span><span className="mt-1 block text-xs leading-5 text-slate-500">{action.text}</span></span></Link>)}
       </motion.div>
 
       {/* Quick stats */}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,10 +18,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" className="dark">
-        <body className="font-sans bg-slate-950 text-white antialiased">
-          {children}
-          <Toaster theme="dark" position="top-right" richColors />
+      <html lang="en" suppressHydrationWarning>
+        <body className="font-sans antialiased">
+          <ThemeProvider>
+            {children}
+            <Toaster theme="dark" position="top-right" richColors />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
