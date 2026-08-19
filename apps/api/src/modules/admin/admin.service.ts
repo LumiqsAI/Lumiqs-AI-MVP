@@ -27,7 +27,7 @@ export class AdminService {
     return { items, total, page, limit, hasMore: skip + items.length < total };
   }
 
-  async getUser(id: string) {
+  async getUser(id: string): Promise<object> {
     if (!Types.ObjectId.isValid(id)) throw new NotFoundException('User not found');
     const user = await this.userModel.findById(id).lean();
     if (!user) throw new NotFoundException('User not found');
@@ -39,7 +39,7 @@ export class AdminService {
     return { ...user, limits, stats: { businessCount, reportCount } };
   }
 
-  async updateUserPlan(id: string, plan: UserPlan) {
+  async updateUserPlan(id: string, plan: UserPlan): Promise<object> {
     if (!Types.ObjectId.isValid(id)) throw new NotFoundException('User not found');
     const user = await this.userModel.findByIdAndUpdate(
       id,

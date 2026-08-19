@@ -3,7 +3,7 @@ import { MarketResearchService } from './market-research.service';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { BusinessOwnerGuard } from '../../common/guards/business-owner.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { PlanLimitGuard, SetPlanRequirement } from '../../plans/plan-limit.guard';
+import { PlanLimitGuard, SetPlanRequirement } from '../plans/plan-limit.guard';
 import type { UserDocument } from '../users/user.schema';
 
 @Controller('businesses/:businessId/market-research')

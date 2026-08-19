@@ -26,12 +26,12 @@ export class AdminController {
   }
 
   @Get('users/:id')
-  getUser(@Param('id') id: string) {
+  getUser(@Param('id') id: string): Promise<object> {
     return this.adminService.getUser(id);
   }
 
   @Patch('users/:id/plan')
-  updatePlan(@Param('id') id: string, @Body('plan') plan: UserPlan) {
+  updatePlan(@Param('id') id: string, @Body('plan') plan: UserPlan): Promise<object> {
     return this.adminService.updateUserPlan(id, plan);
   }
 
