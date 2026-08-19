@@ -6,7 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
   imports: [
     MongooseModule.forRootAsync({
       useFactory: () => ({
-        uri: process.env.MONGODB_URI,
+        uri: process.env.MONGODB_URI || process.env.DATABASE_URL,
         dbName: process.env.MONGODB_DB_NAME || 'lumiqs_ai',
       }),
     }),

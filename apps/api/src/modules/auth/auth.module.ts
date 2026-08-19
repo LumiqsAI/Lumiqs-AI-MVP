@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -7,6 +7,7 @@ import { BusinessOwnerGuard } from '../../common/guards/business-owner.guard';
 import { User, UserSchema } from '../users/user.schema';
 import { Business, BusinessSchema } from '../businesses/business.schema';
 
+@Global()
 @Module({
   imports: [
     MongooseModule.forFeature([
