@@ -283,7 +283,7 @@ export default function PricingPage() {
         <button
           onClick={() => void handlePaidPlan(plan.planKey as "founder" | "studio")}
           disabled={isLoading || planLoading}
-          className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all disabled:opacity-60"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all disabled:opacity-60"
           style={plan.featured ? featuredStyle : defaultStyle}
         >
           {isLoading
@@ -298,7 +298,7 @@ export default function PricingPage() {
       return (
         <Link
           href="/sign-up?redirect=/pricing"
-          className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
           style={plan.featured ? featuredStyle : defaultStyle}
         >
           {plan.cta} <ArrowRight className="h-3.5 w-3.5" />
@@ -311,7 +311,7 @@ export default function PricingPage() {
       return (
         <Link
           href="/contact"
-          className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
           style={customStyle}
         >
           {plan.cta} <ArrowRight className="h-3.5 w-3.5" />
@@ -323,7 +323,7 @@ export default function PricingPage() {
     return (
       <Link
         href={isSignedIn ? "/dashboard" : "/sign-up"}
-        className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
         style={defaultStyle}
       >
         {isSignedIn ? "Go to dashboard" : plan.cta} <ArrowRight className="h-3.5 w-3.5" />

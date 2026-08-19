@@ -37,7 +37,7 @@ export function PublicFooter() {
           </a>
         </div>
         <FooterColumn title="Product" links={productLinks} />
-        <div className="grid grid-cols-2 gap-8 lg:col-span-2">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:col-span-2">
           <FooterColumn title="Resources" links={resourceLinks} />
           <FooterColumn title="Trust & legal" links={legalLinks} />
         </div>
@@ -82,7 +82,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
 
 export function TrustStrip() {
   return (
-    <div className="mx-auto grid max-w-7xl gap-4 px-5 pb-20 sm:grid-cols-3 lg:px-8">
+    <div className="mx-auto grid max-w-7xl gap-4 px-5 py-20 sm:grid-cols-3 lg:px-8">
       <TrustItem icon={<ShieldCheck className="h-4 w-4" />} title="Private by workspace" text="Business context stays scoped to your workspace." />
       <TrustItem icon={<Sparkles className="h-4 w-4" />} title="Evidence-aware" text="Assumptions and estimates are called out clearly." />
       <TrustItem icon={<Check className="h-4 w-4" />} title="Built for action" text="Every insight can become a next step." />

@@ -114,8 +114,8 @@ export default async function HomePage() {
                   <span className="text-xs" style={{ color: "var(--muted-fg)", opacity: 0.6 }}>Acme SaaS / Strategy</span>
                 </div>
 
-                <div className="grid min-h-[390px] grid-cols-[145px_1fr]">
-                  <div className="p-3" style={{ borderRight: "1px solid var(--line)", background: "var(--surface)" }}>
+                <div className="grid min-h-[390px] grid-cols-1 sm:grid-cols-[120px_minmax(0,1fr)] lg:grid-cols-[145px_minmax(0,1fr)]">
+                  <div className="hidden p-3 sm:block" style={{ borderRight: "1px solid var(--line)", background: "var(--surface)" }}>
                     <p className="px-2 pb-3 text-[10px] uppercase tracking-[.18em]" style={{ color: "var(--muted-fg)", opacity: 0.6 }}>Business</p>
                     {["Overview", "AI Consultant", "Analysis", "Strategy", "Execution"].map((item, i) => (
                       <div
@@ -131,27 +131,23 @@ export default async function HomePage() {
                     ))}
                   </div>
 
-                  <div className="p-5">
-                    <div className="flex items-start justify-between">
+                  <div className="min-w-0 p-5">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="text-xs uppercase tracking-[.18em] text-indigo-400">Decision brief</p>
                         <h2 className="mt-2 text-xl font-semibold" style={{ color: "var(--page-fg)" }}>Where should we focus next?</h2>
                       </div>
-                      <span className="rounded-full px-2 py-1 text-[10px] text-emerald-400" style={{ border: "1px solid rgba(52,211,153,.2)", background: "rgba(52,211,153,.1)" }}>
+                      <span className="w-fit shrink-0 rounded-full px-2 py-1 text-[10px] text-emerald-400" style={{ border: "1px solid rgba(52,211,153,.2)", background: "rgba(52,211,153,.1)" }}>
                         Context loaded
                       </span>
                     </div>
 
                     <div className="mt-6 rounded-xl p-4" style={{ border: "1px solid var(--line)", background: "var(--surface-raised)" }}>
-                      <div className="flex gap-3">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg overflow-hidden" style={{ background: "rgba(99,102,241,.2)" }}>
-                          <img src="/logo.png" alt="L" className="w-5 h-5 object-contain" />
-                        </span>
-                        <div>
+                      <div>
                           <p className="text-xs leading-5" style={{ color: "var(--muted-fg)" }}>
                             Your strongest near-term move is to narrow the ICP before adding another acquisition channel.
                           </p>
-                          <div className="mt-4 grid grid-cols-3 gap-2">
+                          <div className="mt-4 grid grid-cols-1 gap-3 min-[420px]:grid-cols-3 min-[420px]:gap-2">
                             {[["Priority", "High"], ["Signal", "5 interviews"], ["Horizon", "2 weeks"]].map(([k, v]) => (
                               <div key={k} className="pl-2" style={{ borderLeft: "2px solid rgba(99,102,241,.5)" }}>
                                 <p className="text-[10px]" style={{ color: "var(--muted-fg)", opacity: 0.6 }}>{k}</p>
@@ -159,7 +155,6 @@ export default async function HomePage() {
                               </div>
                             ))}
                           </div>
-                        </div>
                       </div>
                     </div>
 

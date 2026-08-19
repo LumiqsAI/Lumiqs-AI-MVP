@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, Zap } from "lucide-react";
 import Link from "next/link";
@@ -40,10 +40,18 @@ export default function SettingsPage() {
   const { user } = useUser();
   const api = useApiClient();
   const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
+  const [planError, setPlanError] = useState<string | null>(null);
 
-  useEffect(() => {
-    api.get<PlanInfo>("/users/plan").then(setPlanInfo).catch(() => {});
+  const loadPlan = useCallback(async () => {
+    setPlanError(null);
+    try {
+      setPlanInfo(await api.get<PlanInfo>("/users/plan"));
+    } catch {
+      setPlanError("We couldn't load your plan details. Please try again.");
+    }
   }, [api]);
+
+  useEffect(() => { void loadPlan(); }, [loadPlan]);
 
   const limits = planInfo?.limits;
   const plan = planInfo?.plan ?? "explorer";
@@ -92,7 +100,12 @@ export default function SettingsPage() {
             )}
           </CardHeader>
           <CardContent className="space-y-4">
-            {!planInfo ? (
+            {planError ? (
+              <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-rose-400">{planError}</p>
+                <Button size="sm" variant="outline" onClick={() => void loadPlan()}>Try again</Button>
+              </div>
+            ) : !planInfo ? (
               <p className="text-sm text-slate-500">Loading plan info…</p>
             ) : (
               <>
