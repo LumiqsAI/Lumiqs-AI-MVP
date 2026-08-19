@@ -81,7 +81,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
     setLoadingMsgs(true);
     try {
       const conv = await api.get<Conversation>(`/businesses/${businessId}/conversations/${convId}`);
-      setMessages(conv.messages?.filter((m) => m.role !== "system" && m.role !== "SYSTEM") || []);
+      setMessages(conv.messages?.filter((m) => m.role !== "SYSTEM") || []);
     } catch {
       toast.error("Failed to load conversation");
     } finally {
