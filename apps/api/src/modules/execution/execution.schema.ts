@@ -39,10 +39,10 @@ ExecutionPlanSchema.index({ businessId: 1, createdAt: -1 });
 
 @Schema({ timestamps: true, collection: 'execution_tasks' })
 export class ExecutionTask {
-  @Prop({ type: Types.ObjectId, ref: 'ExecutionPlan', required: true, index: true })
+  @Prop({ type: Types.ObjectId, ref: 'ExecutionPlan', required: true })
   executionPlanId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Business', required: true, index: true })
+  @Prop({ type: Types.ObjectId, ref: 'Business', required: true })
   businessId: Types.ObjectId;
 
   @Prop({ required: true })

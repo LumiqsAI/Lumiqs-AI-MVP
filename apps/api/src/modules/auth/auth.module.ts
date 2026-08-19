@@ -17,6 +17,6 @@ import { Business, BusinessSchema } from '../businesses/business.schema';
   ],
   controllers: [AuthController],
   providers: [AuthService, ClerkAuthGuard, BusinessOwnerGuard],
-  exports: [AuthService, ClerkAuthGuard, BusinessOwnerGuard],
+  exports: [AuthService, ClerkAuthGuard, BusinessOwnerGuard, MongooseModule],
 })
 export class AuthModule {}
