@@ -263,6 +263,10 @@ cd apps/api && npm run test:e2e
 
 ## Deployment
 
+### Remote model training
+
+The Render API service is for inference, not GPU training. The remote training pipeline lives in `training/` and downloads the Hugging Face dataset directly on a GPU server. See `training/README.md` for dataset preparation, validation, QLoRA training, evaluation, and connecting the resulting OpenAI-compatible model with `AI_BASE_URL` and `AI_MODEL`.
+
 ### Frontend → Vercel
 
 ```bash

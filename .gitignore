@@ -14,6 +14,7 @@ out/
 .turbo/
 .swc/
 .cache/
+training/output/
 *.tsbuildinfo
 
 ## Test output
