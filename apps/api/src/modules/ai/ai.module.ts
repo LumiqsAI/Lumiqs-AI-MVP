@@ -10,6 +10,8 @@ import { Business, BusinessSchema } from '../businesses/business.schema';
 import { Conversation, ConversationSchema } from '../conversations/conversation.schema';
 import { Message, MessageSchema } from '../conversations/message.schema';
 import { BusinessMemory, BusinessMemorySchema } from '../memory/business-memory.schema';
+import { AiUsage, AiUsageSchema } from './ai-usage.schema';
+import { PlansModule } from '../plans/plans.module';
 
 @Module({
   imports: [
@@ -18,7 +20,9 @@ import { BusinessMemory, BusinessMemorySchema } from '../memory/business-memory.
       { name: Conversation.name, schema: ConversationSchema },
       { name: Message.name, schema: MessageSchema },
       { name: BusinessMemory.name, schema: BusinessMemorySchema },
+      { name: AiUsage.name, schema: AiUsageSchema },
     ]),
+    PlansModule,
   ],
   controllers: [AIController],
   providers: [AIOrchestrator, OpenAIService, BusinessContextService, MemoryService, KnowledgeService],

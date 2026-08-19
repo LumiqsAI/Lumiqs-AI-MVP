@@ -3,6 +3,13 @@ import { HydratedDocument } from 'mongoose';
 
 export type UserDocument = HydratedDocument<User>;
 
+export enum UserPlan {
+  EXPLORER = 'explorer',
+  FOUNDER = 'founder',
+  STUDIO = 'studio',
+  CUSTOM = 'custom',
+}
+
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
   @Prop({ required: true, unique: true, index: true })
@@ -22,6 +29,9 @@ export class User {
 
   @Prop({ default: false })
   onboardingCompleted: boolean;
+
+  @Prop({ enum: UserPlan, default: UserPlan.EXPLORER })
+  plan: UserPlan;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

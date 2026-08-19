@@ -28,6 +28,7 @@ export class AIController {
       dto.message,
       dto.conversationId,
       res,
+      user.plan,
     );
   }
 }

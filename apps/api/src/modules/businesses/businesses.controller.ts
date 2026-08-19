@@ -15,7 +15,7 @@ export class BusinessesController {
 
   @Post()
   create(@CurrentUser() user: UserDocument, @Body() dto: CreateBusinessDto) {
-    return this.businessesService.create(user._id.toString(), dto);
+    return this.businessesService.create(user._id.toString(), dto, user.plan);
   }
 
   @Get()

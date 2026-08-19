@@ -18,7 +18,7 @@ export class InsightsController {
     @CurrentUser() user: UserDocument,
     @Body() dto: CreateInsightDto,
   ) {
-    return this.service.create(businessId, user._id.toString(), dto);
+    return this.service.create(businessId, user._id.toString(), dto, user.plan);
   }
 
   @Get('businesses/:businessId/insights')

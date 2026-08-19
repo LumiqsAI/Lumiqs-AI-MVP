@@ -4,9 +4,12 @@ import { Model, Types } from 'mongoose';
 import { Business, BusinessDocument } from '../../businesses/business.schema';
 import { Conversation, ConversationDocument } from '../../conversations/conversation.schema';
 import { Message, MessageDocument, MessageRole } from '../../conversations/message.schema';
+import { AiUsage, AiUsageDocument } from '../ai-usage.schema';
 import { OpenAIService } from './openai.service';
 import { BusinessContextService } from './business-context.service';
 import { MemoryService } from './memory.service';
+import { PlanLimitsService } from '../../plans/plan-limits.service';
+import { UserPlan } from '../../users/user.schema';
 import { Response } from 'express';
 
 const CONSULTANT_SYSTEM_PROMPT = `You are Lumiqs AI, a rigorous business decision-support consultant. You work exclusively for the business described in the context provided.
@@ -37,9 +40,11 @@ export class AIOrchestrator {
     @InjectModel(Business.name) private readonly businessModel: Model<BusinessDocument>,
     @InjectModel(Conversation.name) private readonly conversationModel: Model<ConversationDocument>,
     @InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
+    @InjectModel(AiUsage.name) private readonly aiUsageModel: Model<AiUsageDocument>,
     private readonly openai: OpenAIService,
     private readonly contextService: BusinessContextService,
     private readonly memoryService: MemoryService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   async chat(
@@ -48,7 +53,25 @@ export class AIOrchestrator {
     message: string,
     conversationId: string | undefined,
     res: Response,
+    userPlan: UserPlan = UserPlan.EXPLORER,
   ) {
+    // Check monthly AI message limit
+    const limits = this.planLimits.getLimits(userPlan);
+    if (!this.planLimits.isUnlimited(limits.maxAiMessagesPerMonth)) {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      const usedThisMonth = await this.messageModel.countDocuments({
+        userId: new Types.ObjectId(userId),
+        role: MessageRole.USER,
+        createdAt: { $gte: startOfMonth },
+      });
+      if (usedThisMonth >= limits.maxAiMessagesPerMonth) {
+        throw new ForbiddenException(
+          `You have used all ${limits.maxAiMessagesPerMonth} AI messages for this month on the ${userPlan} plan. Upgrade to continue.`,
+        );
+      }
+    }
     // Verify ownership
     const business = await this.businessModel
       .findOne({ _id: businessId, ownerId: new Types.ObjectId(userId), isDeleted: false })

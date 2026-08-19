@@ -7,6 +7,7 @@ import { Business, BusinessSchema } from '../businesses/business.schema';
 import { Report, ReportSchema } from '../reports/report.schema';
 import { Conversation, ConversationSchema } from '../conversations/conversation.schema';
 import { Message, MessageSchema } from '../conversations/message.schema';
+import { PlansModule } from '../plans/plans.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { Message, MessageSchema } from '../conversations/message.schema';
       { name: Conversation.name, schema: ConversationSchema },
       { name: Message.name, schema: MessageSchema },
     ]),
+    PlansModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

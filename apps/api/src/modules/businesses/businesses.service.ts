@@ -3,14 +3,29 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Business, BusinessDocument } from './business.schema';
 import { CreateBusinessDto, UpdateBusinessDto } from './businesses.dto';
+import { PlanLimitsService } from '../plans/plan-limits.service';
+import { UserPlan } from '../users/user.schema';
 
 @Injectable()
 export class BusinessesService {
   constructor(
     @InjectModel(Business.name) private readonly businessModel: Model<BusinessDocument>,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
-  async create(ownerId: string, dto: CreateBusinessDto) {
+  async create(ownerId: string, dto: CreateBusinessDto, userPlan: UserPlan) {
+    const limits = this.planLimits.getLimits(userPlan);
+    if (!this.planLimits.isUnlimited(limits.maxBusinesses)) {
+      const count = await this.businessModel.countDocuments({
+        ownerId: new Types.ObjectId(ownerId),
+        isDeleted: false,
+      });
+      if (count >= limits.maxBusinesses) {
+        throw new ForbiddenException(
+          `Your ${userPlan} plan allows up to ${limits.maxBusinesses} business workspace(s). Upgrade to create more.`,
+        );
+      }
+    }
     return this.businessModel.create({ ...dto, ownerId: new Types.ObjectId(ownerId) });
   }
 
