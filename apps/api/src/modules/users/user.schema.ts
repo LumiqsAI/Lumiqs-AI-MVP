@@ -10,6 +10,11 @@ export enum UserPlan {
   CUSTOM = 'custom',
 }
 
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
   @Prop({ required: true, unique: true, index: true })
@@ -32,6 +37,9 @@ export class User {
 
   @Prop({ enum: UserPlan, default: UserPlan.EXPLORER })
   plan: UserPlan;
+
+  @Prop({ enum: UserRole, default: UserRole.USER })
+  role: UserRole;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

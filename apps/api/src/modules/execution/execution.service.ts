@@ -4,6 +4,8 @@ import { Model, Types } from 'mongoose';
 import { Report, ReportDocument, ReportType, ReportStatus } from '../reports/report.schema';
 import { ExecutionTask, ExecutionTaskDocument, TaskStatus } from './execution.schema';
 import { AIOrchestrator } from '../ai/services/ai-orchestrator.service';
+import { PlanLimitsService } from '../plans/plan-limits.service';
+import { UserPlan } from '../users/user.schema';
 
 const EXECUTION_PROMPT = `You are a senior business execution consultant. Create a detailed, actionable execution plan.
 Every task must be specific, measurable, and achievable. Assign realistic weeks and priorities.
@@ -40,9 +42,11 @@ export class ExecutionService {
     @InjectModel(Report.name) private readonly reportModel: Model<ReportDocument>,
     @InjectModel(ExecutionTask.name) private readonly taskModel: Model<ExecutionTaskDocument>,
     private readonly orchestrator: AIOrchestrator,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
-  async generate(businessId: string, userId: string) {
+  async generate(businessId: string, userId: string, userPlan: UserPlan) {
+    await this.planLimits.checkReportLimit(userId, userPlan);
     const report = await this.reportModel.create({
       businessId: new Types.ObjectId(businessId),
       userId: new Types.ObjectId(userId),

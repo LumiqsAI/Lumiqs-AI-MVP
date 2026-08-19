@@ -4,6 +4,7 @@ import { AnalyzeCompetitorDto } from './competitors.dto';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { BusinessOwnerGuard } from '../../common/guards/business-owner.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { PlanLimitGuard, SetPlanRequirement } from '../plans/plan-limit.guard';
 import type { UserDocument } from '../users/user.schema';
 
 @Controller('businesses/:businessId/competitors')
@@ -17,6 +18,8 @@ export class CompetitorsController {
   }
 
   @Post('analyze')
+  @UseGuards(PlanLimitGuard)
+  @SetPlanRequirement('competitors')
   analyze(
     @Param('businessId') businessId: string,
     @CurrentUser() user: UserDocument,

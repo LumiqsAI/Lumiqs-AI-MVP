@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { createClerkClient } from '@clerk/backend';
 import { User, UserDocument } from '../users/user.schema';
+import { UserRole } from '../users/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -15,16 +16,24 @@ export class AuthService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
 
+  private resolveRole(email: string): UserRole {
+    const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+    return adminEmail && email.toLowerCase() === adminEmail ? UserRole.ADMIN : UserRole.USER;
+  }
+
   async syncUser(clerkId: string) {
     const clerkUser = await this.clerk.users.getUser(clerkId);
+    const email = clerkUser.emailAddresses[0]?.emailAddress || '';
     const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || undefined;
+    const role = this.resolveRole(email);
     return this.userModel.findOneAndUpdate(
       { authProviderId: clerkId },
       {
         $set: {
-          email: clerkUser.emailAddresses[0]?.emailAddress || '',
+          email,
           name,
           avatarUrl: clerkUser.imageUrl || undefined,
+          role,
         },
         $setOnInsert: { authProviderId: clerkId },
       },

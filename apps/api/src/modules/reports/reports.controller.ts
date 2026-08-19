@@ -1,4 +1,4 @@
-import { Controller, Get, Delete, Param, UseGuards, Res, Query } from '@nestjs/common';
+import { Controller, Get, Delete, Param, UseGuards, Res, Query, ForbiddenException } from '@nestjs/common';
 import type { Response } from 'express';
 import { ReportsService } from './reports.service';
 import { PdfService } from './pdf/pdf.service';
@@ -9,6 +9,7 @@ import type { UserDocument } from '../users/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Business, BusinessDocument } from '../businesses/business.schema';
+import { PlanLimitsService } from '../plans/plan-limits.service';
 
 @Controller()
 @UseGuards(ClerkAuthGuard)
@@ -16,6 +17,7 @@ export class ReportsController {
   constructor(
     private readonly reportsService: ReportsService,
     private readonly pdfService: PdfService,
+    private readonly planLimits: PlanLimitsService,
     @InjectModel(Business.name) private readonly businessModel: Model<BusinessDocument>,
   ) {}
 
@@ -46,6 +48,12 @@ export class ReportsController {
     @CurrentUser() user: UserDocument,
     @Res() res: Response,
   ) {
+    const limits = this.planLimits.getLimits(user.plan);
+    if (!limits.canExportPdf) {
+      throw new ForbiddenException(
+        `Your ${user.plan} plan does not include PDF Export. Upgrade to unlock this feature.`,
+      );
+    }
     const report = await this.reportsService.findOne(id, user._id.toString());
     const business = await this.businessModel.findById(report.businessId).lean();
     const pdf = await this.pdfService.generateReportPdf(report, business?.name || 'Business');

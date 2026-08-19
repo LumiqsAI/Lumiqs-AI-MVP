@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Report, ReportDocument, ReportType, ReportStatus } from '../reports/report.schema';
 import { AIOrchestrator } from '../ai/services/ai-orchestrator.service';
+import { PlanLimitsService } from '../plans/plan-limits.service';
+import { UserPlan } from '../users/user.schema';
 
 const STRATEGY_PROMPT = `You are a senior business strategist. Create a comprehensive business strategy for the provided company.
 Every recommendation must include reason, priority, expected impact, and implementation notes.
@@ -53,9 +55,11 @@ export class StrategyService {
   constructor(
     @InjectModel(Report.name) private readonly reportModel: Model<ReportDocument>,
     private readonly orchestrator: AIOrchestrator,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
-  async generate(businessId: string, userId: string) {
+  async generate(businessId: string, userId: string, userPlan: UserPlan) {
+    await this.planLimits.checkReportLimit(userId, userPlan);
     const report = await this.reportModel.create({
       businessId: new Types.ObjectId(businessId),
       userId: new Types.ObjectId(userId),

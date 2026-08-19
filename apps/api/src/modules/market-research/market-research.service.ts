@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Report, ReportDocument, ReportType, ReportStatus } from '../reports/report.schema';
 import { AIOrchestrator } from '../ai/services/ai-orchestrator.service';
+import { PlanLimitsService } from '../plans/plan-limits.service';
+import { UserPlan } from '../users/user.schema';
 
 const MARKET_RESEARCH_PROMPT = `You are a senior market research analyst. Conduct thorough market research for the provided business.
 Do NOT fabricate specific market size numbers — label all estimates as "Estimated" or "Requires validation".
@@ -32,9 +34,11 @@ export class MarketResearchService {
   constructor(
     @InjectModel(Report.name) private readonly reportModel: Model<ReportDocument>,
     private readonly orchestrator: AIOrchestrator,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
-  async generate(businessId: string, userId: string) {
+  async generate(businessId: string, userId: string, userPlan: UserPlan) {
+    await this.planLimits.checkReportLimit(userId, userPlan);
     const report = await this.reportModel.create({
       businessId: new Types.ObjectId(businessId),
       userId: new Types.ObjectId(userId),

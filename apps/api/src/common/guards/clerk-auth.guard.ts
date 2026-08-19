@@ -8,7 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { createClerkClient } from '@clerk/backend';
-import { User, UserDocument } from '../../modules/users/user.schema';
+import { User, UserDocument, UserRole } from '../../modules/users/user.schema';
 
 @Injectable()
 export class ClerkAuthGuard implements CanActivate {
@@ -60,11 +60,15 @@ export class ClerkAuthGuard implements CanActivate {
 
       if (!user) {
         const clerkUser = await this.clerk.users.getUser(clerkId);
+        const email = clerkUser.emailAddresses[0]?.emailAddress || '';
+        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+        const role = adminEmail && email.toLowerCase() === adminEmail ? UserRole.ADMIN : UserRole.USER;
         user = await this.userModel.create({
           authProviderId: clerkId,
-          email: clerkUser.emailAddresses[0]?.emailAddress || '',
+          email,
           name: [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || undefined,
           avatarUrl: clerkUser.imageUrl || undefined,
+          role,
         });
       }
 
