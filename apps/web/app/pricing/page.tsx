@@ -142,9 +142,12 @@ export default function PricingPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const api = useApiClient();
 
-  // Fetch current plan only when signed in
+  // Fetch current plan only when signed in and Clerk is ready
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
+    if (!isLoaded || !isSignedIn) {
+      if (isLoaded && !isSignedIn) setCurrentPlan(null);
+      return;
+    }
     setPlanLoading(true);
     api.get<{ plan: string }>("/users/plan")
       .then((r) => setCurrentPlan(r.plan))
@@ -238,6 +241,16 @@ export default function PricingPage() {
       cursor: "not-allowed",
     };
 
+    // Show skeleton while Clerk is still loading
+    if (!isLoaded) {
+      return (
+        <div
+          className="mt-6 h-10 rounded-xl animate-pulse"
+          style={{ background: "var(--surface-raised)" }}
+        />
+      );
+    }
+
     // Current plan button
     if (isCurrent) {
       return (
@@ -293,15 +306,27 @@ export default function PricingPage() {
       );
     }
 
-    // Free / Custom / Explorer
+    // Custom plan
+    if (isCustom) {
+      return (
+        <Link
+          href="/contact"
+          className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+          style={customStyle}
+        >
+          {plan.cta} <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      );
+    }
+
+    // Explorer — free plan
     return (
       <Link
-        href={isCustom ? plan.href : isSignedIn ? "/dashboard" : plan.href}
+        href={isSignedIn ? "/dashboard" : "/sign-up"}
         className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
-        style={isCustom ? customStyle : defaultStyle}
+        style={defaultStyle}
       >
-        {isCustom ? plan.cta : isSignedIn ? "Go to dashboard" : plan.cta}
-        <ArrowRight className="h-3.5 w-3.5" />
+        {isSignedIn ? "Go to dashboard" : plan.cta} <ArrowRight className="h-3.5 w-3.5" />
       </Link>
     );
   };
