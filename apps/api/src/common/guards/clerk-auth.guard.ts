@@ -70,6 +70,19 @@ export class ClerkAuthGuard implements CanActivate {
           avatarUrl: clerkUser.imageUrl || undefined,
           role,
         });
+      } else {
+        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+        const role = adminEmail && user.email.toLowerCase() === adminEmail
+          ? UserRole.ADMIN
+          : UserRole.USER;
+
+        if (user.role !== role) {
+          user = await this.userModel.findByIdAndUpdate(
+            user._id,
+            { $set: { role } },
+            { new: true },
+          ) ?? user;
+        }
       }
 
       request.user = user;
