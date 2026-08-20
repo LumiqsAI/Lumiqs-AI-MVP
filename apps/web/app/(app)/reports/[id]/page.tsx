@@ -161,7 +161,7 @@ export default function ReportViewerPage({ params }: { params: Promise<{ id: str
   const content = report.content as Record<string, unknown> | null;
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto">
+    <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
       <div className="flex items-center gap-4 mb-8">
         <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-4 w-4" /></Button>
         <div className="flex-1">
@@ -381,7 +381,7 @@ export default function ReportViewerPage({ params }: { params: Promise<{ id: str
   const content = report.content as Record<string, unknown> | null;
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto">
+    <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
       <div className="flex items-center gap-4 mb-8">
         <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-4 w-4" /></Button>
         <div className="flex-1">

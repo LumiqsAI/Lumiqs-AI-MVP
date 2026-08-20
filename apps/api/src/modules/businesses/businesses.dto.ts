@@ -9,54 +9,61 @@ export class CreateBusinessDto {
   @MaxLength(100)
   name: string;
 
-  @IsOptional()
-  @IsString()
+  @IsUrl({ require_protocol: true })
   @MaxLength(200)
-  website?: string;
+  website: string;
 
-  @IsOptional()
   @IsString()
   @MaxLength(100)
-  industry?: string;
+  industry: string;
 
-  @IsOptional()
   @IsEnum(BusinessStage)
-  stage?: BusinessStage;
+  stage: BusinessStage;
 
-  @IsOptional()
   @IsString()
   @MaxLength(100)
-  country?: string;
+  country: string;
 
-  @IsOptional()
   @IsString()
   @MaxLength(50)
-  teamSize?: string;
+  teamSize: string;
 
-  @IsOptional()
   @IsString()
   @MaxLength(200)
-  revenueModel?: string;
+  revenueModel: string;
 
-  @IsOptional()
   @IsString()
   @MaxLength(500)
-  targetAudience?: string;
+  targetAudience: string;
 
-  @IsOptional()
   @IsString()
   @MaxLength(2000)
-  description?: string;
+  description: string;
 
-  @IsOptional()
   @IsString()
   @MaxLength(2000)
-  goals?: string;
+  goals: string;
 
-  @IsOptional()
   @IsString()
   @MaxLength(2000)
-  challenges?: string;
+  challenges: string;
 }
 
-export class UpdateBusinessDto extends CreateBusinessDto {}
+export class UpdateBusinessDto {
+  @IsOptional() @IsString() @MinLength(1) @MaxLength(100) name?: string;
+  @IsOptional() @IsUrl({ require_protocol: true }) @MaxLength(200) website?: string;
+  @IsOptional() @IsString() @MaxLength(100) industry?: string;
+  @IsOptional() @IsEnum(BusinessStage) stage?: BusinessStage;
+  @IsOptional() @IsString() @MaxLength(100) country?: string;
+  @IsOptional() @IsString() @MaxLength(50) teamSize?: string;
+  @IsOptional() @IsString() @MaxLength(200) revenueModel?: string;
+  @IsOptional() @IsString() @MaxLength(500) targetAudience?: string;
+  @IsOptional() @IsString() @MaxLength(2000) description?: string;
+  @IsOptional() @IsString() @MaxLength(2000) goals?: string;
+  @IsOptional() @IsString() @MaxLength(2000) challenges?: string;
+}
+
+export class DiscoverBusinessDto {
+  @IsString() @MinLength(2) @MaxLength(100) name: string;
+  @IsUrl({ require_protocol: true }) @MaxLength(200) website: string;
+}

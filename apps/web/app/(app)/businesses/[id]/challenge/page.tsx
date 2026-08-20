@@ -86,7 +86,7 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
   const verdict = c ? VERDICT_STYLE[c.overallVerdict] : null;
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto">
+    <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold" style={{ color: "var(--page-fg)" }}>Challenge My Strategy</h1>

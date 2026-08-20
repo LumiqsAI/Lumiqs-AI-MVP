@@ -85,7 +85,7 @@ export default function ScenariosPage({ params }: { params: Promise<{ id: string
   const best = c?.scenarios.reduce((a, b) => (b.score > a.score ? b : a), c.scenarios[0]);
 
   return (
-    <div className="p-6 lg:p-8 max-w-5xl mx-auto">
+    <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold" style={{ color: "var(--page-fg)" }}>Scenario Comparison</h1>

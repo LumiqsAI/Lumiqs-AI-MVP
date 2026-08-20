@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Business, BusinessDocument } from './business.schema';
@@ -14,6 +14,7 @@ export class BusinessesService {
   ) {}
 
   async create(ownerId: string, dto: CreateBusinessDto, userPlan: UserPlan) {
+    this.assertCompleteProfile(dto);
     const limits = this.planLimits.getLimits(userPlan);
     if (!this.planLimits.isUnlimited(limits.maxBusinesses)) {
       const count = await this.businessModel.countDocuments({
@@ -45,8 +46,24 @@ export class BusinessesService {
   }
 
   async update(id: string, ownerId: string, dto: UpdateBusinessDto) {
-    await this.findOne(id, ownerId);
+    const business = await this.findOne(id, ownerId);
+    this.assertCompleteProfile({ ...business, ...dto });
     return this.businessModel.findByIdAndUpdate(id, { $set: dto }, { new: true }).lean();
+  }
+
+  private assertCompleteProfile(profile: Partial<CreateBusinessDto>): void {
+    const requiredFields: Array<[keyof CreateBusinessDto, string]> = [
+      ['name', 'business name'], ['website', 'website'], ['industry', 'industry'],
+      ['country', 'target region or country'], ['teamSize', 'team size'], ['revenueModel', 'business model'],
+      ['targetAudience', 'target customers'], ['description', 'business description'], ['goals', 'main goal'],
+      ['challenges', 'biggest challenges'],
+    ];
+    const missing = requiredFields
+      .filter(([key]) => typeof profile[key] !== 'string' || !profile[key]?.trim())
+      .map(([, label]) => label);
+    if (missing.length > 0) {
+      throw new BadRequestException(`Complete all required business details. Missing: ${missing.join(', ')}.`);
+    }
   }
 
   async remove(id: string, ownerId: string) {

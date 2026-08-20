@@ -84,7 +84,7 @@ export default function StrategyPage({ params }: { params: Promise<{ id: string 
   const versionLabel = versionIndex >= 0 ? `V${versions.length - versionIndex}` : null;
 
   return (
-    <div className="p-6 lg:p-8 max-w-5xl mx-auto">
+    <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-semibold" style={{ color: "var(--page-fg)" }}>Business Strategy</h1>

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BusinessesController } from './businesses.controller';
 import { BusinessesService } from './businesses.service';
+import { BusinessDiscoveryService } from './business-discovery.service';
 import { Business, BusinessSchema } from './business.schema';
 import { BusinessOwnerGuard } from '../../common/guards/business-owner.guard';
 import { PlansModule } from '../plans/plans.module';
@@ -12,7 +13,7 @@ import { PlansModule } from '../plans/plans.module';
     PlansModule,
   ],
   controllers: [BusinessesController],
-  providers: [BusinessesService, BusinessOwnerGuard],
+  providers: [BusinessesService, BusinessDiscoveryService, BusinessOwnerGuard],
   exports: [BusinessesService],
 })
 export class BusinessesModule {}

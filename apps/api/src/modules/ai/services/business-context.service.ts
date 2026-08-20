@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnprocessableEntityException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Business, BusinessDocument } from '../../businesses/business.schema';
@@ -61,6 +61,28 @@ export class BusinessContextService {
     const playbook = this.knowledgeService.format(this.knowledgeService.retrieve(question));
     const contextBlock = this.buildContextBlock(business, memories, reports, insights, competitors, playbook);
     return { business, memories, recentMessages, reports, insights, competitors, contextBlock };
+  }
+
+  /** Ensures every AI output is based on a complete, usable business profile. */
+  async assertProfileReady(businessId: string): Promise<void> {
+    const business = await this.businessModel.findById(businessId).lean();
+    if (!business) return;
+
+    const requiredFields: Array<[keyof Business, string]> = [
+      ['name', 'business name'], ['website', 'website'], ['industry', 'industry'],
+      ['country', 'target region or country'], ['teamSize', 'team size'],
+      ['revenueModel', 'business model'], ['targetAudience', 'target customers'],
+      ['description', 'business description'], ['goals', 'main goal'], ['challenges', 'biggest challenges'],
+    ];
+    const missing = requiredFields
+      .filter(([key]) => typeof business[key] !== 'string' || !(business[key] as string).trim())
+      .map(([, label]) => label);
+
+    if (missing.length > 0) {
+      throw new UnprocessableEntityException(
+        `Complete your business profile before using AI services. Missing: ${missing.join(', ')}.`,
+      );
+    }
   }
 
   private buildContextBlock(

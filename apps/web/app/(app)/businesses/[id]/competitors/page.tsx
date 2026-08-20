@@ -91,7 +91,7 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
   const c = report?.content as CompetitorContent | undefined;
 
   return (
-    <div className="p-6 lg:p-8 max-w-5xl mx-auto">
+    <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
       <div className="mb-8 flex items-start justify-between gap-4">
         <div className="flex-1">
           <h1 className="text-2xl font-semibold" style={{ color: "var(--page-fg)" }}>Competitor Analysis</h1>

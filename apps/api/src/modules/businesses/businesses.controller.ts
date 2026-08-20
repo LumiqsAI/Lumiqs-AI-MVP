@@ -2,7 +2,8 @@ import {
   Controller, Get, Post, Patch, Delete, Body, Param, UseGuards,
 } from '@nestjs/common';
 import { BusinessesService } from './businesses.service';
-import { CreateBusinessDto, UpdateBusinessDto } from './businesses.dto';
+import { BusinessDiscoveryService } from './business-discovery.service';
+import { CreateBusinessDto, DiscoverBusinessDto, UpdateBusinessDto } from './businesses.dto';
 import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { BusinessOwnerGuard } from '../../common/guards/business-owner.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -11,7 +12,15 @@ import type { UserDocument } from '../users/user.schema';
 @Controller('businesses')
 @UseGuards(ClerkAuthGuard)
 export class BusinessesController {
-  constructor(private readonly businessesService: BusinessesService) {}
+  constructor(
+    private readonly businessesService: BusinessesService,
+    private readonly discoveryService: BusinessDiscoveryService,
+  ) {}
+
+  @Post('discover')
+  discover(@Body() dto: DiscoverBusinessDto) {
+    return this.discoveryService.discover(dto.name, dto.website);
+  }
 
   @Post()
   create(@CurrentUser() user: UserDocument, @Body() dto: CreateBusinessDto) {

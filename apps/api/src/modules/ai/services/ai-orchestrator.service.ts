@@ -73,6 +73,7 @@ export class AIOrchestrator {
     res: Response,
     userPlan: UserPlan = UserPlan.EXPLORER,
   ) {
+    await this.contextService.assertProfileReady(businessId);
     // Check monthly AI message limit before touching headers
     const limits = this.planLimits.getLimits(userPlan);
     if (!this.planLimits.isUnlimited(limits.maxAiMessagesPerMonth)) {
@@ -186,6 +187,7 @@ export class AIOrchestrator {
     systemPrompt: string,
     userPrompt: string,
   ): Promise<unknown> {
+    await this.contextService.assertProfileReady(businessId);
     const { contextBlock } = await this.contextService.buildContext(businessId);
     const fullSystem = `${REPORT_QUALITY_FOUNDATION}\n\n${systemPrompt}\n\n${contextBlock}`;
     return this.openai.chatJSON([

@@ -78,7 +78,9 @@ export function Sidebar() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div
+      <Link
+        href="/"
+        aria-label="Go to Lumiqs AI home page"
         className={cn("flex items-center gap-2.5 px-4 py-5", collapsed && "justify-center px-2")}
         style={{ borderBottom: "1px solid var(--line)" }}
       >
@@ -90,7 +92,7 @@ export function Sidebar() {
             Lumiqs AI
           </span>
         )}
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-0.5">

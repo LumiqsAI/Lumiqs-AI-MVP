@@ -71,7 +71,7 @@ export default function ReportsPage({ params }: { params: Promise<{ id: string }
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-5xl mx-auto">
+    <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-white">Reports</h1>
         <p className="text-slate-400 mt-1">All generated reports for this business.</p>

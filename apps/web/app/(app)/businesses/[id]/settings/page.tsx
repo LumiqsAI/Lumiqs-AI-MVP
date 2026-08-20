@@ -40,6 +40,11 @@ export default function BusinessSettingsPage({ params }: { params: Promise<{ id:
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    const missing = Object.entries(form).find(([key, value]) => key !== "stage" && !value.trim());
+    if (missing) {
+      toast.error(`Complete ${missing[0].replace(/([A-Z])/g, " $1").toLowerCase()} before saving`);
+      return;
+    }
     setLoading(true);
     try {
       await api.patch(`/businesses/${businessId}`, form);
@@ -65,7 +70,7 @@ export default function BusinessSettingsPage({ params }: { params: Promise<{ id:
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
+    <div className="w-full max-w-2xl p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-semibold text-white mb-2 flex items-center gap-2"><Settings className="h-5 w-5" />Business Settings</h1>
         <p className="text-slate-400 mb-8">Update your business information to improve AI recommendations.</p>

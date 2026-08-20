@@ -139,7 +139,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardData | 
   const signals = buildSignals(data, plan);
 
   return (
-    <div className="relative mx-auto max-w-5xl px-6 py-10 lg:px-10 lg:py-12">
+    <div className="relative w-full max-w-[1440px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12 xl:mx-0 2xl:mx-auto">
       <div
         className="pointer-events-none absolute -right-32 -top-32 h-80 w-80 rounded-full"
         style={{ background: "radial-gradient(circle, var(--accent-glow) 0%, transparent 70%)", filter: "blur(60px)", opacity: 0.6 }}

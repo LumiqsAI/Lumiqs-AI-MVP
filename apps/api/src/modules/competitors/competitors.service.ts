@@ -43,6 +43,7 @@ export class CompetitorsService {
   ) {}
 
   async analyze(businessId: string, userId: string, dto: AnalyzeCompetitorDto) {
+    await this.contextService.assertProfileReady(businessId);
     const { contextBlock } = await this.contextService.buildContext(businessId);
 
     const userPrompt = `Analyze competitor: ${dto.competitorName}${dto.website ? ` (${dto.website})` : ''}.

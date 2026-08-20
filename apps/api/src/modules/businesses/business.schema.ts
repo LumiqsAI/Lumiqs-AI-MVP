@@ -23,35 +23,35 @@ export class Business {
   @Prop()
   logoUrl?: string;
 
-  @Prop()
-  website?: string;
+  @Prop({ required: true })
+  website: string;
 
-  @Prop()
-  industry?: string;
+  @Prop({ required: true })
+  industry: string;
 
   @Prop({ enum: BusinessStage, default: BusinessStage.IDEA })
   stage: BusinessStage;
 
-  @Prop()
-  country?: string;
+  @Prop({ required: true })
+  country: string;
 
-  @Prop()
-  teamSize?: string;
+  @Prop({ required: true })
+  teamSize: string;
 
-  @Prop()
-  revenueModel?: string;
+  @Prop({ required: true })
+  revenueModel: string;
 
-  @Prop()
-  targetAudience?: string;
+  @Prop({ required: true })
+  targetAudience: string;
 
-  @Prop()
-  description?: string;
+  @Prop({ required: true })
+  description: string;
 
-  @Prop()
-  goals?: string;
+  @Prop({ required: true })
+  goals: string;
 
-  @Prop()
-  challenges?: string;
+  @Prop({ required: true })
+  challenges: string;
 
   @Prop({ default: false })
   isDeleted: boolean;
