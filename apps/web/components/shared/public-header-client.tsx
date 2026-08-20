@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export function PublicHeaderClient({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
+export function PublicHeaderClient({ isAuthenticated }: { isAuthenticated?: boolean }) {
+  const { isSignedIn, isLoaded } = useAuth();
+  // If prop is explicitly passed (server-rendered pages), use it; otherwise fall back to client-side Clerk state
+  const authed = isAuthenticated ?? (isLoaded ? !!isSignedIn : false);
   return (
     <header
       className="sticky top-0 z-40 public-nav"
@@ -45,7 +49,7 @@ export function PublicHeaderClient({ isAuthenticated = false }: { isAuthenticate
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          {isAuthenticated ? (
+          {authed ? (
             <Link
               href="/dashboard"
               className="btn-glow inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-white"

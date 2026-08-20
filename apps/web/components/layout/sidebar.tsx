@@ -6,7 +6,7 @@ import { UserButton } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Building2, Bot, BarChart3, Globe, Users2,
-  Lightbulb, Rocket, FileText, Settings, ChevronLeft, ChevronRight, Menu, X, Bookmark, ShieldCheck,
+  Lightbulb, Rocket, FileText, Settings, ChevronLeft, ChevronRight, Menu, X, Bookmark, ShieldCheck, GitCompare, Swords,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -24,6 +24,8 @@ const BUSINESS_NAV = (id: string) => [
   { label: "Market Research", href: `/businesses/${id}/market-research`, icon: Globe },
   { label: "Competitors",     href: `/businesses/${id}/competitors`,     icon: Users2 },
   { label: "Strategy",        href: `/businesses/${id}/strategy`,        icon: Lightbulb },
+  { label: "Compare Scenarios", href: `/businesses/${id}/scenarios`,     icon: GitCompare },
+  { label: "Challenge Strategy", href: `/businesses/${id}/challenge`,    icon: Swords },
   { label: "Execution",       href: `/businesses/${id}/execution`,       icon: Rocket },
   { label: "Reports",         href: `/businesses/${id}/reports`,         icon: FileText },
   { label: "Insights",        href: `/businesses/${id}/insights`,        icon: Bookmark },

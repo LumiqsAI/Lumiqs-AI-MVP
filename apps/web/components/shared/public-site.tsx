@@ -83,10 +83,10 @@ function FooterColumn({ title, links }: { title: string; links: string[][] }) {
   );
 }
 
-export function PublicShell({ children }: { children: React.ReactNode }) {
+export function PublicShell({ children, isAuthenticated = false }: { children: React.ReactNode; isAuthenticated?: boolean }) {
   return (
     <div className="min-h-screen" style={{ background: "var(--page-bg)", color: "var(--page-fg)" }}>
-      <PublicHeader />
+      <PublicHeader isAuthenticated={isAuthenticated} />
       {children}
       <PublicFooter />
     </div>

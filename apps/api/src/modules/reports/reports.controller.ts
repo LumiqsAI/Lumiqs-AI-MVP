@@ -1,4 +1,4 @@
-import { Controller, Get, Delete, Param, UseGuards, Res, Query, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, UseGuards, Res, Query, ForbiddenException } from '@nestjs/common';
 import type { Response } from 'express';
 import { ReportsService } from './reports.service';
 import { PdfService } from './pdf/pdf.service';
@@ -40,6 +40,22 @@ export class ReportsController {
   @Delete('reports/:id')
   remove(@Param('id') id: string, @CurrentUser() user: UserDocument) {
     return this.reportsService.remove(id, user._id.toString());
+  }
+
+  @Post('reports/:id/share')
+  share(@Param('id') id: string, @CurrentUser() user: UserDocument) {
+    return this.reportsService.share(id, user._id.toString());
+  }
+
+  @Post('reports/:id/unshare')
+  unshare(@Param('id') id: string, @CurrentUser() user: UserDocument) {
+    return this.reportsService.unshare(id, user._id.toString());
+  }
+
+  // Public — no auth guard — accessible via share token
+  @Get('reports/shared/:token')
+  findShared(@Param('token') token: string) {
+    return this.reportsService.findByShareToken(token);
   }
 
   @Get('reports/:id/pdf')

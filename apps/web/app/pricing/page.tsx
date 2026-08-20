@@ -332,7 +332,7 @@ export default function PricingPage() {
   };
 
   return (
-    <PublicShell>
+    <PublicShell isAuthenticated={isLoaded && !!isSignedIn}>
       <main>
         <section className="mx-auto max-w-7xl px-5 pb-12 pt-20 text-center lg:px-8 lg:pt-28">
           <p className="text-xs font-semibold uppercase tracking-[.22em] text-indigo-400">

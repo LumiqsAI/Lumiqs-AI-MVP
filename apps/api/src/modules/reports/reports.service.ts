@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { randomBytes } from 'crypto';
 import { Report, ReportDocument } from './report.schema';
 
 @Injectable()
@@ -40,5 +41,30 @@ export class ReportsService {
   async remove(id: string, userId: string) {
     await this.findOne(id, userId);
     return this.reportModel.findByIdAndUpdate(id, { $set: { isDeleted: true } }, { new: true }).lean();
+  }
+
+  async share(id: string, userId: string) {
+    await this.findOne(id, userId);
+    const token = randomBytes(24).toString('hex');
+    return this.reportModel.findByIdAndUpdate(
+      id,
+      { $set: { shareToken: token, isShared: true } },
+      { new: true },
+    ).lean();
+  }
+
+  async unshare(id: string, userId: string) {
+    await this.findOne(id, userId);
+    return this.reportModel.findByIdAndUpdate(
+      id,
+      { $unset: { shareToken: '' }, $set: { isShared: false } },
+      { new: true },
+    ).lean();
+  }
+
+  async findByShareToken(token: string) {
+    const report = await this.reportModel.findOne({ shareToken: token, isShared: true, isDeleted: false }).lean();
+    if (!report) throw new NotFoundException('Shared report not found or link has been revoked');
+    return report;
   }
 }

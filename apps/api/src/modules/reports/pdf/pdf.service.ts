@@ -121,6 +121,54 @@ export class PdfService {
       }
 
       // ── Execution weeks ──────────────────────────────────────
+      // Custom decision reports (scenario comparisons and strategy challenges)
+      if (content.question || content.recommendation) {
+        this.sectionHeader(doc, 'Decision Comparison');
+        if (content.question) doc.fillColor('#334155').fontSize(11).font('Helvetica')
+          .text('Question: ' + String(content.question), { lineGap: 3 });
+        if (content.recommendation) doc.fillColor('#0f172a').fontSize(11).font('Helvetica-Bold')
+          .text('Recommendation: ' + String(content.recommendation), { lineGap: 3 });
+        const scenarios = content.scenarios as Array<Record<string, unknown>> | undefined;
+        for (const scenario of scenarios || []) {
+          const score = scenario.score !== undefined ? ' — ' + String(scenario.score) + '/100' : '';
+          doc.moveDown(0.35).fillColor('#0f172a').fontSize(11).font('Helvetica-Bold')
+            .text(String(scenario.name || 'Scenario') + score);
+          for (const [key, label] of [['marketOpportunity', 'Market opportunity'], ['competitionLevel', 'Competition'], ['revenuePotential', 'Revenue potential'], ['customerAcquisitionCost', 'CAC estimate'], ['timeToRevenue', 'Time to revenue']] as const) {
+            if (scenario[key]) doc.fillColor('#64748b').fontSize(10).font('Helvetica')
+              .text(label + ': ' + String(scenario[key]), { indent: 10, lineGap: 2 });
+          }
+        }
+        doc.moveDown(0.8);
+      }
+
+      if (content.verdictSummary || content.strategyStatement) {
+        this.sectionHeader(doc, 'Strategy Challenge');
+        if (content.strategyStatement) doc.fillColor('#334155').fontSize(11).font('Helvetica')
+          .text('Strategy: ' + String(content.strategyStatement), { lineGap: 3 });
+        if (content.overallVerdict) doc.fillColor('#0f172a').fontSize(11).font('Helvetica-Bold')
+          .text('Verdict: ' + String(content.overallVerdict), { lineGap: 3 });
+        if (content.verdictSummary) doc.fillColor('#64748b').fontSize(10).font('Helvetica')
+          .text(String(content.verdictSummary), { lineGap: 3 });
+        doc.moveDown(0.8);
+      }
+
+      const customArraySections: Record<string, string> = {
+        keyFactors: 'Key Decision Factors',
+        nextSteps: 'Next Steps',
+        weakPoints: 'Weak Points',
+        alternativesToConsider: 'Alternatives to Consider',
+      };
+      for (const [key, label] of Object.entries(customArraySections)) {
+        const items = content[key];
+        if (!Array.isArray(items) || !items.length) continue;
+        this.sectionHeader(doc, label);
+        for (const item of items) {
+          const text = typeof item === 'string' ? item : String((item as Record<string, unknown>).hypothesis || (item as Record<string, unknown>).assumption || '');
+          if (text) doc.fillColor('#334155').fontSize(10).font('Helvetica').text('• ' + text, { indent: 10, lineGap: 3 });
+        }
+        doc.moveDown(0.6);
+      }
+
       const weeks = content.weeks as Array<{
         week: number;
         focus: string;

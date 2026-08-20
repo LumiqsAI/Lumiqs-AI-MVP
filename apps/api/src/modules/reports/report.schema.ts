@@ -45,6 +45,12 @@ export class Report {
   @Prop()
   pdfUrl?: string;
 
+  @Prop({ type: String, index: true, sparse: true })
+  shareToken?: string;
+
+  @Prop({ default: false })
+  isShared: boolean;
+
   @Prop({ default: false })
   isDeleted: boolean;
 }

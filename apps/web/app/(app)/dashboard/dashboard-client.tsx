@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Building2, FileText, Bot, Plus, ArrowRight, TrendingUp, Sparkles, Compass, Search, Rocket, Zap } from "lucide-react";
+import {
+  Building2, FileText, Bot, Plus, ArrowRight, TrendingUp,
+  Sparkles, Compass, Search, Rocket, Zap,
+  AlertCircle, CheckCircle2, Lightbulb,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +20,108 @@ const PLAN_LABELS: Record<string, string> = { explorer: "Explorer", founder: "Fo
 const PLAN_BADGE: Record<string, "default" | "success" | "info"> = { explorer: "default", founder: "success", studio: "info", custom: "info" };
 
 const fadeUp = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
+
+interface Signal {
+  icon: React.ReactNode;
+  label: string;
+  action: string;
+  href: string;
+  type: "alert" | "suggestion" | "next";
+}
+
+function buildSignals(data: DashboardData | null, plan: string | null): Signal[] {
+  const signals: Signal[] = [];
+  const firstBiz = data?.businesses[0];
+
+  if (!firstBiz) {
+    signals.push({
+      icon: <Lightbulb className="h-4 w-4" />,
+      label: "No business workspace yet",
+      action: "Create your first workspace to start analysis",
+      href: "/businesses/new",
+      type: "next",
+    });
+    return signals;
+  }
+
+  // No reports yet
+  if (!data?.recentReports.length) {
+    signals.push({
+      icon: <Lightbulb className="h-4 w-4" />,
+      label: "No analysis run yet",
+      action: "Recommended next action: Run a business analysis",
+      href: `/businesses/${firstBiz.id}/analysis`,
+      type: "next",
+    });
+  }
+
+  // Has reports but no competitor analysis
+  const hasCompetitor = data?.recentReports.some((r) => r.type === "COMPETITOR_ANALYSIS");
+  if (data?.recentReports.length && !hasCompetitor) {
+    signals.push({
+      icon: <AlertCircle className="h-4 w-4" />,
+      label: "Competitor landscape not mapped",
+      action: "Analyze at least one competitor to validate positioning",
+      href: `/businesses/${firstBiz.id}/competitors`,
+      type: "alert",
+    });
+  }
+
+  // Has analysis but no strategy
+  const hasStrategy = data?.recentReports.some((r) => r.type === "STRATEGY");
+  const hasAnalysis = data?.recentReports.some((r) => r.type === "BUSINESS_ANALYSIS");
+  if (hasAnalysis && !hasStrategy) {
+    signals.push({
+      icon: <Lightbulb className="h-4 w-4" />,
+      label: "Strategy not defined",
+      action: "Recommended next action: Build a strategy from your analysis",
+      href: `/businesses/${firstBiz.id}/strategy`,
+      type: "suggestion",
+    });
+  }
+
+  // Has strategy but no execution plan
+  const hasExecution = data?.recentReports.some((r) => r.type === "EXECUTION");
+  if (hasStrategy && !hasExecution) {
+    signals.push({
+      icon: <Rocket className="h-4 w-4" />,
+      label: "No execution plan yet",
+      action: "Recommended next action: Convert strategy into weekly priorities",
+      href: `/businesses/${firstBiz.id}/execution`,
+      type: "next",
+    });
+  }
+
+  // Explorer plan nudge
+  if (plan === "explorer" && data?.recentReports.length && data.recentReports.length >= 1) {
+    signals.push({
+      icon: <Zap className="h-4 w-4" />,
+      label: "Explorer plan limit approaching",
+      action: "Upgrade to Founder for unlimited analysis and competitor tracking",
+      href: "/pricing",
+      type: "alert",
+    });
+  }
+
+  // All good
+  if (signals.length === 0) {
+    signals.push({
+      icon: <CheckCircle2 className="h-4 w-4" />,
+      label: "Workspace is active",
+      action: "Ask your AI consultant a new decision question",
+      href: `/businesses/${firstBiz.id}/ai`,
+      type: "next",
+    });
+  }
+
+  return signals.slice(0, 3);
+}
+
+const SIGNAL_STYLES: Record<Signal["type"], { border: string; bg: string; icon: string }> = {
+  alert:      { border: "rgba(251,113,133,.25)", bg: "rgba(251,113,133,.06)", icon: "text-rose-400" },
+  suggestion: { border: "rgba(251,191,36,.25)",  bg: "rgba(251,191,36,.06)",  icon: "text-amber-400" },
+  next:       { border: "rgba(99,102,241,.25)",  bg: "rgba(99,102,241,.06)",  icon: "text-indigo-400" },
+};
 
 export function DashboardClient({ initialData }: { initialData: DashboardData | null }) {
   const { user } = useUser();
@@ -30,10 +136,10 @@ export function DashboardClient({ initialData }: { initialData: DashboardData | 
   const firstName = user?.firstName || "there";
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const signals = buildSignals(data, plan);
 
   return (
     <div className="relative mx-auto max-w-5xl px-6 py-10 lg:px-10 lg:py-12">
-      {/* Subtle ambient glow */}
       <div
         className="pointer-events-none absolute -right-32 -top-32 h-80 w-80 rounded-full"
         style={{ background: "radial-gradient(circle, var(--accent-glow) 0%, transparent 70%)", filter: "blur(60px)", opacity: 0.6 }}
@@ -66,7 +172,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardData | 
               {greeting}, {firstName}.
             </h1>
             <p className="mt-2 max-w-lg text-base" style={{ color: "var(--muted-fg)" }}>
-              A clear view of your businesses, decisions, and the next useful move.
+              Here's what needs your attention and what to do next.
             </p>
           </div>
           <Link href="/businesses/new">
@@ -75,8 +181,36 @@ export function DashboardClient({ initialData }: { initialData: DashboardData | 
         </div>
       </motion.div>
 
+      {/* ── Decision signals ── */}
+      <motion.div {...fadeUp} transition={{ delay: 0.04 }} className="mb-8">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[.18em]" style={{ color: "var(--subtle-fg)" }}>
+          Signals &amp; next actions
+        </p>
+        <div className="grid gap-3 md:grid-cols-3">
+          {signals.map((signal) => {
+            const s = SIGNAL_STYLES[signal.type];
+            return (
+              <Link
+                key={signal.label}
+                href={signal.href}
+                className="group flex flex-col gap-2 rounded-xl p-4 transition-all"
+                style={{ border: `1px solid ${s.border}`, background: s.bg }}
+              >
+                <span className={`flex items-center gap-2 text-xs font-semibold ${s.icon}`}>
+                  {signal.icon} {signal.label}
+                </span>
+                <span className="text-xs leading-5" style={{ color: "var(--muted-fg)" }}>{signal.action}</span>
+                <span className="mt-auto inline-flex items-center gap-1 text-xs font-medium" style={{ color: "var(--accent)" }}>
+                  Take action <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </motion.div>
+
       {/* ── Quick actions ── */}
-      <motion.div {...fadeUp} transition={{ delay: 0.04 }} className="mb-8 grid gap-3 md:grid-cols-3">
+      <motion.div {...fadeUp} transition={{ delay: 0.07 }} className="mb-8 grid gap-3 md:grid-cols-3">
         {[
           { icon: Compass, title: "Ask your consultant", text: "Pressure-test a decision with business context.", href: data?.businesses[0] ? `/businesses/${data.businesses[0].id}/ai` : "/businesses/new" },
           { icon: Search,  title: "Explore a market",   text: "Turn uncertainty into a focused research brief.", href: data?.businesses[0] ? `/businesses/${data.businesses[0].id}/market-research` : "/businesses/new" },
@@ -96,10 +230,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardData | 
               (e.currentTarget as HTMLElement).style.background = "var(--card-bg)";
             }}
           >
-            <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-              style={{ background: "var(--accent-subtle)", color: "var(--accent)" }}
-            >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--accent-subtle)", color: "var(--accent)" }}>
               <action.icon className="h-4 w-4" />
             </span>
             <span className="min-w-0">
@@ -110,30 +241,6 @@ export function DashboardClient({ initialData }: { initialData: DashboardData | 
               <span className="mt-1 block text-xs leading-5" style={{ color: "var(--muted-fg)" }}>{action.text}</span>
             </span>
           </Link>
-        ))}
-      </motion.div>
-
-      {/* ── Stats ── */}
-      <motion.div {...fadeUp} transition={{ delay: 0.07 }} className="mb-8 grid grid-cols-3 gap-4">
-        {[
-          { label: "Businesses",     value: data?.businesses.length ?? 0,          icon: Building2, color: "var(--accent)" },
-          { label: "Reports",        value: data?.recentReports.length ?? 0,        icon: FileText,  color: "#7C3AED" },
-          { label: "Conversations",  value: data?.recentConversations.length ?? 0,  icon: Bot,       color: "#059669" },
-        ].map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="flex items-center gap-4 py-4">
-              <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
-              >
-                <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
-              </div>
-              <div>
-                <p className="text-2xl font-semibold tracking-tight" style={{ color: "var(--page-fg)", letterSpacing: "-0.03em" }}>{stat.value}</p>
-                <p className="text-xs" style={{ color: "var(--muted-fg)" }}>{stat.label}</p>
-              </div>
-            </CardContent>
-          </Card>
         ))}
       </motion.div>
 
@@ -195,9 +302,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardData | 
         {/* Recent Reports */}
         <motion.div {...fadeUp} transition={{ delay: 0.13 }}>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Recent Reports</CardTitle>
-            </CardHeader>
+            <CardHeader className="pb-3"><CardTitle>Recent Reports</CardTitle></CardHeader>
             <CardContent>
               {!data?.recentReports.length ? (
                 <div className="text-center py-10">
@@ -237,9 +342,7 @@ export function DashboardClient({ initialData }: { initialData: DashboardData | 
         {/* Recent Conversations */}
         <motion.div {...fadeUp} transition={{ delay: 0.17 }} className="lg:col-span-2">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Recent AI Conversations</CardTitle>
-            </CardHeader>
+            <CardHeader className="pb-3"><CardTitle>Recent AI Conversations</CardTitle></CardHeader>
             <CardContent>
               {!data?.recentConversations.length ? (
                 <div className="text-center py-10">
