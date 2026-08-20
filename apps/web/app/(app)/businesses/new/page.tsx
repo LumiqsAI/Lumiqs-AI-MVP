@@ -57,6 +57,7 @@ export default function NewBusinessPage() {
   const [discovering, setDiscovering] = useState(false);
   const [discovery, setDiscovery] = useState<DiscoveryResult | null>(null);
   const [profileConfirmed, setProfileConfirmed] = useState(false);
+  const [detailsMode, setDetailsMode] = useState<"manual" | "discovery">("manual");
   const [form, setForm] = useState<FormState>({
     name: "", industry: "", stage: "IDEA", country: "", teamSize: "",
     revenueModel: "", targetAudience: "", description: "", goals: "", challenges: "", website: "",
@@ -68,7 +69,7 @@ export default function NewBusinessPage() {
     e.preventDefault();
     const missing = REQUIRED_PROFILE_FIELDS.find(([key]) => !form[key].trim());
     if (missing) { toast.error(`${missing[1]} is required`); return; }
-    if (!profileConfirmed) { toast.error("Confirm the public business profile before continuing"); return; }
+    if (detailsMode === "discovery" && !profileConfirmed) { toast.error("Confirm the public business profile before continuing"); return; }
     setStep("confirm");
   }
 
@@ -120,6 +121,27 @@ export default function NewBusinessPage() {
               Set up your business workspace. The more context you provide, the better your AI consultant will be.
             </p>
 
+            <div className="mb-6 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => { setDetailsMode("manual"); setProfileConfirmed(false); }}
+                className="rounded-xl p-4 text-left transition-colors"
+                style={detailsMode === "manual" ? { border: "1px solid var(--accent)", background: "var(--accent-subtle)" } : { border: "1px solid var(--line-strong)", background: "var(--surface)" }}
+              >
+                <p className="text-sm font-medium" style={{ color: "var(--page-fg)" }}>Enter details manually</p>
+                <p className="mt-1 text-xs" style={{ color: "var(--muted-fg)" }}>Add your business profile yourself.</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setDetailsMode("discovery")}
+                className="rounded-xl p-4 text-left transition-colors"
+                style={detailsMode === "discovery" ? { border: "1px solid var(--accent)", background: "var(--accent-subtle)" } : { border: "1px solid var(--line-strong)", background: "var(--surface)" }}
+              >
+                <p className="text-sm font-medium" style={{ color: "var(--page-fg)" }}>Find my public profile</p>
+                <p className="mt-1 text-xs" style={{ color: "var(--muted-fg)" }}>Match Google results and scan your website before confirmation.</p>
+              </button>
+            </div>
+
             <form onSubmit={handleReview} className="space-y-6">
               <Card>
                 <CardHeader><CardTitle>Basic Information</CardTitle></CardHeader>
@@ -155,12 +177,16 @@ export default function NewBusinessPage() {
                   </div>
                   <div>
                     <label className="text-sm mb-1.5 block" style={{ color: "var(--muted-fg)" }}>Website *</label>
-                    <div className="flex flex-col gap-2 sm:flex-row">
-                      <Input type="url" placeholder="https://..." value={form.website} onChange={(e) => { set("website", e.target.value); setProfileConfirmed(false); }} required />
-                      <Button type="button" variant="outline" onClick={() => void verifyPublicProfile()} loading={discovering} className="shrink-0">Verify profile</Button>
-                    </div>
+                    {detailsMode === "discovery" ? (
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Input type="url" placeholder="https://..." value={form.website} onChange={(e) => { set("website", e.target.value); setProfileConfirmed(false); }} required />
+                        <Button type="button" variant="outline" onClick={() => void verifyPublicProfile()} loading={discovering} className="shrink-0">Verify profile</Button>
+                      </div>
+                    ) : (
+                      <Input type="url" placeholder="https://..." value={form.website} onChange={(e) => set("website", e.target.value)} required />
+                    )}
                   </div>
-                  {discovery && (
+                  {detailsMode === "discovery" && discovery && (
                     <div className="rounded-xl p-4" style={{ border: "1px solid var(--line-strong)", background: "var(--surface)" }}>
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
