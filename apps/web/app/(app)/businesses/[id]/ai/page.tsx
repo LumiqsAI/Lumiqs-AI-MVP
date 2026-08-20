@@ -45,6 +45,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [editingConvId, setEditingConvId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -195,6 +196,17 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
     }
   }
 
+  async function copyMessage(message: Message) {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopiedMessageId(message.id);
+      toast.success("Response copied to clipboard");
+      window.setTimeout(() => setCopiedMessageId((id) => id === message.id ? null : id), 2_000);
+    } catch {
+      toast.error("Could not copy the response. Please try again.");
+    }
+  }
+
   function newConversation() { setActiveConvId(null); setMessages([]); }
 
   function startEditingConversation(conversation: Conversation) {
@@ -232,7 +244,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
   }
 
   return (
-    <div className="flex h-full" style={{ background: "var(--page-bg)" }}>
+    <div className="flex min-h-full" style={{ background: "var(--page-bg)" }}>
       {/* ── Conversation sidebar ── */}
       <div
         className="hidden md:flex flex-col w-56 flex-shrink-0"
@@ -338,7 +350,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <div
-          className="px-6 py-4 flex items-center gap-3 flex-shrink-0"
+          className="px-4 py-4 sm:px-6 flex items-center gap-3 flex-shrink-0"
           style={{ borderBottom: "1px solid var(--line)", background: "var(--surface)" }}
         >
           <div
@@ -354,7 +366,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8">
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8 sm:px-6 sm:py-8">
           {messages.length === 0 && !streaming && (
             <div className="max-w-2xl mx-auto">
               <div className="text-center mb-10">
@@ -440,15 +452,16 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
                       <div className="prose text-sm max-w-none">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                       </div>
-                      <div className="flex items-center gap-1 mt-4 pt-3 opacity-0 group-hover:opacity-100 transition-opacity" style={{ borderTop: "1px solid var(--line)" }}>
+                      <div className="flex items-center gap-1 mt-4 pt-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity" style={{ borderTop: "1px solid var(--line)" }}>
                         <button
-                          onClick={() => navigator.clipboard.writeText(msg.content)}
+                          onClick={() => void copyMessage(msg)}
+                          aria-label={copiedMessageId === msg.id ? "Response copied" : "Copy response"}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors"
                           style={{ color: "var(--muted-fg)" }}
                           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)"; (e.currentTarget as HTMLElement).style.color = "var(--page-fg)"; }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--muted-fg)"; }}
                         >
-                          <Copy className="h-3.5 w-3.5" /> Copy
+                          {copiedMessageId === msg.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copiedMessageId === msg.id ? "Copied" : "Copy"}
                         </button>
                         <button
                           onClick={() => saveInsight(msg.content)}
@@ -521,7 +534,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
 
         {/* ── Input area ── */}
         <div
-          className="px-6 py-4 flex-shrink-0"
+          className="px-4 py-4 sm:px-6 flex-shrink-0"
           style={{ borderTop: "1px solid var(--line)", background: "var(--surface)" }}
         >
           <div className="max-w-3xl mx-auto">

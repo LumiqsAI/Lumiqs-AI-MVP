@@ -65,7 +65,7 @@ export default function BusinessSettingsPage({ params }: { params: Promise<{ id:
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-2xl mx-auto">
+    <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-semibold text-white mb-2 flex items-center gap-2"><Settings className="h-5 w-5" />Business Settings</h1>
         <p className="text-slate-400 mb-8">Update your business information to improve AI recommendations.</p>
@@ -75,7 +75,7 @@ export default function BusinessSettingsPage({ params }: { params: Promise<{ id:
             <CardHeader><CardTitle>Basic Information</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div><label className="text-sm text-slate-400 mb-1.5 block">Business Name *</label><Input value={form.name} onChange={(e) => set("name", e.target.value)} required /></div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div><label className="text-sm text-slate-400 mb-1.5 block">Industry</label><Input value={form.industry} onChange={(e) => set("industry", e.target.value)} /></div>
                 <div><label className="text-sm text-slate-400 mb-1.5 block">Stage</label>
                   <Select value={form.stage} onValueChange={(v) => set("stage", v)}>
@@ -84,7 +84,7 @@ export default function BusinessSettingsPage({ params }: { params: Promise<{ id:
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div><label className="text-sm text-slate-400 mb-1.5 block">Country</label><Input value={form.country} onChange={(e) => set("country", e.target.value)} /></div>
                 <div><label className="text-sm text-slate-400 mb-1.5 block">Team Size</label><Input value={form.teamSize} onChange={(e) => set("teamSize", e.target.value)} /></div>
               </div>

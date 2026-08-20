@@ -71,7 +71,7 @@ export default function NewBusinessPage() {
   const stageLabel = STAGES.find((s) => s.value === form.stage)?.label ?? form.stage;
 
   return (
-    <div className="p-6 lg:p-8 max-w-2xl mx-auto">
+    <div className="mx-auto max-w-2xl p-4 sm:p-6 lg:p-8">
       <AnimatePresence mode="wait">
         {step === "form" ? (
           <motion.div
@@ -93,7 +93,7 @@ export default function NewBusinessPage() {
                     <label className="text-sm mb-1.5 block" style={{ color: "var(--muted-fg)" }}>Business Name *</label>
                     <Input placeholder="e.g. Lumiqs AI" value={form.name} onChange={(e) => set("name", e.target.value)} required />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <label className="text-sm mb-1.5 block" style={{ color: "var(--muted-fg)" }}>Industry</label>
                       <Input placeholder="e.g. SaaS, E-commerce" value={form.industry} onChange={(e) => set("industry", e.target.value)} />
@@ -108,7 +108,7 @@ export default function NewBusinessPage() {
                       </Select>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <label className="text-sm mb-1.5 block" style={{ color: "var(--muted-fg)" }}>Target Region / Country</label>
                       <Input placeholder="e.g. United States" value={form.country} onChange={(e) => set("country", e.target.value)} />
@@ -151,7 +151,7 @@ export default function NewBusinessPage() {
                 </CardContent>
               </Card>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <Button type="submit" size="lg">
                   Review summary <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -204,7 +204,7 @@ export default function NewBusinessPage() {
               Lumiqs will use this context for all analysis, market research, strategy, and execution planning in this workspace.
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Button size="lg" loading={loading} onClick={handleCreate}>
                 Looks good — create workspace <ArrowRight className="h-4 w-4" />
               </Button>

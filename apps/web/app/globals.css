@@ -314,7 +314,7 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.35); }
 
 /* ── Prose / markdown ─────────────────────────────────────────── */
-.prose { color: var(--muted-fg); line-height: 1.75; }
+.prose { color: var(--muted-fg); line-height: 1.75; overflow-wrap: anywhere; }
 .prose h1, .prose h2, .prose h3 {
   color: var(--page-fg);
   font-weight: 600;
@@ -348,7 +348,7 @@ body {
   border-top: 1px solid var(--line);
   margin: 1.5em 0;
 }
-.prose table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+.prose table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; font-size: 0.9em; }
 .prose th {
   background: var(--surface);
   padding: 0.6em 0.85em;
