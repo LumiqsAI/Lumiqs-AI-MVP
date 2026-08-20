@@ -94,7 +94,11 @@ export default function NewBusinessPage() {
   async function handleCreate() {
     setLoading(true);
     try {
-      const business = await api.post<Business>("/businesses", form);
+      const business = await api.post<Business>("/businesses", {
+        ...form,
+        profileSource: detailsMode === "discovery" ? "public_website" : "manual",
+        publicProfile: detailsMode === "discovery" ? discovery?.site : undefined,
+      });
       toast.success("Business created!");
       router.push(`/businesses/${business.id}/ai`);
     } catch (err: unknown) {
@@ -195,9 +199,14 @@ export default function NewBusinessPage() {
                         </div>
                         <span className="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium" style={{ background: "var(--accent-subtle)", color: "var(--accent)" }}>SEO basics: {discovery.site.seo.score}/100</span>
                       </div>
-                      <div className="mt-3 flex flex-wrap gap-2 text-xs" style={{ color: "var(--muted-fg)" }}>
-                        {discovery.site.socialProfiles.length > 0 ? discovery.site.socialProfiles.map((profile) => <a key={profile.url} href={profile.url} target="_blank" rel="noreferrer" className="underline">{profile.platform}</a>) : <span>No public social links found.</span>}
+                      <div className="mt-3 text-xs" style={{ color: "var(--muted-fg)" }}>
+                        <p className="font-medium" style={{ color: "var(--page-fg)" }}>Public profiles found</p>
+                        <div className="mt-1 flex flex-wrap gap-2">
+                          {discovery.site.socialProfiles.length > 0 ? discovery.site.socialProfiles.map((profile) => <a key={profile.url} href={profile.url} target="_blank" rel="noreferrer" className="underline">{profile.platform}</a>) : <span>No public social profiles found on this website.</span>}
+                        </div>
+                        <p className="mt-2" style={{ color: "var(--subtle-fg)" }}>Checked: Instagram, LinkedIn, Facebook, X/Twitter, YouTube, and TikTok. Profiles not listed were not found on the public website.</p>
                       </div>
+                      <details className="mt-3 text-xs" style={{ color: "var(--muted-fg)" }}><summary className="cursor-pointer font-medium" style={{ color: "var(--page-fg)" }}>View full website scan</summary><ul className="mt-2 space-y-1">{discovery.site.seo.checks.map((check) => <li key={check.label}>{check.passed ? "✓" : "—"} {check.label}: {check.detail}</li>)}</ul></details>
                       <p className="mt-3 text-xs" style={{ color: "var(--subtle-fg)" }}>{discovery.searchResults.available ? "Google candidate matches found below." : discovery.searchResults.message}</p>
                       {discovery.searchResults.items?.map((item) => <a key={item.url} href={item.url} target="_blank" rel="noreferrer" className="mt-2 block text-xs underline" style={{ color: "var(--accent)" }}>{item.title || item.url}</a>)}
                       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

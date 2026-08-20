@@ -17,10 +17,16 @@ const STAGES = [
   { value: "GROWTH", label: "Growth" }, { value: "ESTABLISHED", label: "Established" },
 ];
 
+type ProfileMeta = {
+  source: "manual" | "public_website";
+  site?: { title?: string; description?: string; socialProfiles?: Array<{ platform: string; url: string }>; seo?: { score?: number; checks?: Array<{ label: string; passed: boolean; detail: string }> } };
+};
+
 export default function BusinessSettingsPage({ params }: { params: Promise<{ id: string }> }) {
   const [businessId, setBusinessId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [profileMeta, setProfileMeta] = useState<ProfileMeta>({ source: "manual" });
   const [form, setForm] = useState({ name: "", industry: "", stage: "IDEA", country: "", teamSize: "", revenueModel: "", targetAudience: "", description: "", goals: "", challenges: "", website: "" });
   const router = useRouter();
   const api = useApiClient();
@@ -29,8 +35,9 @@ export default function BusinessSettingsPage({ params }: { params: Promise<{ id:
     params.then(async ({ id }) => {
       setBusinessId(id);
       try {
-        const b = await api.get<typeof form & { id: string }>(`/businesses/${id}`);
+        const b = await api.get<typeof form & { id: string; profileSource?: "manual" | "public_website"; publicProfile?: ProfileMeta["site"] }>(`/businesses/${id}`);
         setForm({ name: b.name || "", industry: b.industry || "", stage: (b as { stage?: string }).stage || "IDEA", country: (b as { country?: string }).country || "", teamSize: (b as { teamSize?: string }).teamSize || "", revenueModel: (b as { revenueModel?: string }).revenueModel || "", targetAudience: (b as { targetAudience?: string }).targetAudience || "", description: (b as { description?: string }).description || "", goals: (b as { goals?: string }).goals || "", challenges: (b as { challenges?: string }).challenges || "", website: (b as { website?: string }).website || "" });
+        setProfileMeta({ source: b.profileSource || "manual", site: b.publicProfile });
       } catch { /* silent */ }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -74,6 +81,19 @@ export default function BusinessSettingsPage({ params }: { params: Promise<{ id:
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-semibold text-white mb-2 flex items-center gap-2"><Settings className="h-5 w-5" />Business Settings</h1>
         <p className="text-slate-400 mb-8">Update your business information to improve AI recommendations.</p>
+
+        <Card className="mb-6">
+          <CardHeader><CardTitle>Business profile source</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-sm" style={{ color: "var(--muted-fg)" }}>{profileMeta.source === "public_website" ? "Confirmed from a public website scan" : "Entered manually"}</p>
+            {profileMeta.source === "public_website" && profileMeta.site && <>
+              <p className="mt-2 text-sm" style={{ color: "var(--page-fg)" }}>{profileMeta.site.title || "Public website"}</p>
+              <p className="mt-1 text-xs" style={{ color: "var(--muted-fg)" }}>SEO basics: {profileMeta.site.seo?.score ?? "—"}/100</p>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs">{profileMeta.site.socialProfiles?.length ? profileMeta.site.socialProfiles.map((profile) => <a key={profile.url} href={profile.url} target="_blank" rel="noreferrer" className="underline" style={{ color: "var(--accent)" }}>{profile.platform}</a>) : <span style={{ color: "var(--muted-fg)" }}>No public social profiles were found.</span>}</div>
+              <details className="mt-3 text-xs" style={{ color: "var(--muted-fg)" }}><summary className="cursor-pointer">View saved website scan</summary><ul className="mt-2 space-y-1">{profileMeta.site.seo?.checks?.map((check) => <li key={check.label}>{check.passed ? "✓" : "—"} {check.label}: {check.detail}</li>)}</ul></details>
+            </>}
+          </CardContent>
+        </Card>
 
         <form onSubmit={save} className="space-y-6">
           <Card>

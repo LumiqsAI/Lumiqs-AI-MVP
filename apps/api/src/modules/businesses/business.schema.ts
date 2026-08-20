@@ -55,6 +55,12 @@ export class Business {
 
   @Prop({ default: false })
   isDeleted: boolean;
+
+  @Prop({ enum: ['manual', 'public_website'], default: 'manual' })
+  profileSource: 'manual' | 'public_website';
+
+  @Prop({ type: Object })
+  publicProfile?: Record<string, unknown>;
 }
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);
