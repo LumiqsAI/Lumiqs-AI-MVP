@@ -153,29 +153,31 @@ export class ClerkAuthGuard implements CanActivate {
       // ---------------------------------------------------------
       // 6. Find user in MongoDB
       // ---------------------------------------------------------
-      let user = await this.userModel.findOne({
-        authProviderId: clerkId,
-      });
+let user = await this.userModel.findOne({
+  authProviderId: clerkId,
+});
 
-      // ---------------------------------------------------------
-      // 7. Create user if this is their first API request
-      // ---------------------------------------------------------
-      if (!user) {
-        const clerkUser = await this.clerk.users.getUser(clerkId);
+if (!user) {
+  const clerkUser = await this.clerk.users.getUser(clerkId);
 
-        const email =
-          clerkUser.emailAddresses[0]?.emailAddress || '';
+  const email =
+    clerkUser.emailAddresses[0]?.emailAddress
+      ?.toLowerCase()
+      .trim() || '';
 
-        const adminEmail =
-          process.env.ADMIN_EMAIL?.toLowerCase();
+  // Try to find an existing account by email
+  if (email) {
+    user = await this.userModel.findOne({
+      email: email,
+    });
+  }
 
-        const role =
-          adminEmail &&
-          email.toLowerCase() === adminEmail
-            ? UserRole.ADMIN
-            : UserRole.USER;
-
-        user = await this.userModel.create({
+  // Existing MongoDB user found
+  if (user) {
+    user = await this.userModel.findByIdAndUpdate(
+      user._id,
+      {
+        $set: {
           authProviderId: clerkId,
           email,
           name:
@@ -186,9 +188,40 @@ export class ClerkAuthGuard implements CanActivate {
               .filter(Boolean)
               .join(' ') || undefined,
           avatarUrl: clerkUser.imageUrl || undefined,
-          role,
-        });
-      }
+        },
+      },
+      {
+        new: true,
+      },
+    );
+  }
+
+  // No existing user — create one
+  else {
+    const adminEmail =
+      process.env.ADMIN_EMAIL?.toLowerCase();
+
+    const role =
+      adminEmail &&
+      email === adminEmail
+        ? UserRole.ADMIN
+        : UserRole.USER;
+
+    user = await this.userModel.create({
+      authProviderId: clerkId,
+      email,
+      name:
+        [
+          clerkUser.firstName,
+          clerkUser.lastName,
+        ]
+          .filter(Boolean)
+          .join(' ') || undefined,
+      avatarUrl: clerkUser.imageUrl || undefined,
+      role,
+    });
+  }
+}
 
       // ---------------------------------------------------------
       // 8. Update existing user's role if necessary
