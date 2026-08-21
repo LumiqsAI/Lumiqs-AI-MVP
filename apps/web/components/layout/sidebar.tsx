@@ -211,7 +211,7 @@ export function Sidebar() {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          "hidden lg:flex flex-col relative h-screen sticky top-0 transition-all duration-200 flex-shrink-0",
+          "hidden lg:flex flex-col relative h-screen flex-shrink-0 transition-all duration-200",
           collapsed ? "w-14" : "w-56",
         )}
         style={{ background: "var(--sidebar-bg)", borderRight: "1px solid var(--line)" }}
