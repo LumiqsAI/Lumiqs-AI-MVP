@@ -48,7 +48,7 @@ services:
       - key: RAZORPAY_WEBHOOK_SECRET
         sync: false
       - key: CORS_ORIGIN
-        sync: false
+        value: https://lumiqs.in,https://www.lumiqs.in
       - key: THROTTLE_TTL
         value: "60"
       - key: THROTTLE_LIMIT
