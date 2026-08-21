@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://lumiqs-ai-mvp-web.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://lumiqs.in"),
   title: "Lumiqs AI — AI-Powered Business Consultant",
   description: "Make smarter business decisions with AI-powered insights, analysis, and strategy.",
   icons: { icon: "/logo.png", apple: "/logo.png" },
