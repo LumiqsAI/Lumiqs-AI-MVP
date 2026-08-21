@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { createClerkClient } from '@clerk/backend';
+
 import {
   User,
   UserDocument,
@@ -52,18 +53,20 @@ export class ClerkAuthGuard implements CanActivate {
       }
 
       // ---------------------------------------------------------
-      // 2. Preserve the REAL incoming request
+      // 2. Preserve the REAL incoming request headers
       // ---------------------------------------------------------
       const headers = new Headers();
 
       for (const [key, value] of Object.entries(request.headers)) {
-        if (value === undefined) {
+        if (value === undefined || value === null) {
           continue;
         }
 
         headers.set(
           key,
-          Array.isArray(value) ? value.join(', ') : value,
+          Array.isArray(value)
+            ? value.join(', ')
+            : String(value),
         );
       }
 
@@ -73,18 +76,14 @@ export class ClerkAuthGuard implements CanActivate {
       // ---------------------------------------------------------
       // 3. Build the actual request URL
       // ---------------------------------------------------------
-      const forwardedProto = request.headers[
-        'x-forwarded-proto'
-      ];
+      const forwardedProto = request.headers['x-forwarded-proto'];
 
       const protocol =
         typeof forwardedProto === 'string'
           ? forwardedProto.split(',')[0].trim()
           : request.protocol || 'https';
 
-      const forwardedHost = request.headers[
-        'x-forwarded-host'
-      ];
+      const forwardedHost = request.headers['x-forwarded-host'];
 
       const host =
         typeof forwardedHost === 'string'
