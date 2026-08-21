@@ -350,7 +350,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <div
-          className="px-4 py-4 sm:px-6 flex items-center gap-3 flex-shrink-0"
+          className="pl-14 pr-4 py-3 sm:px-6 sm:py-4 flex items-center gap-3 flex-shrink-0 lg:pl-4"
           style={{ borderBottom: "1px solid var(--line)", background: "var(--surface)" }}
         >
           <div
@@ -534,12 +534,12 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
 
         {/* ── Input area ── */}
         <div
-          className="px-4 py-4 sm:px-6 flex-shrink-0"
+          className="px-3 py-3 sm:px-6 sm:py-4 flex-shrink-0"
           style={{ borderTop: "1px solid var(--line)", background: "var(--surface)" }}
         >
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl mx-auto w-full">
             <div
-              className="flex gap-3 items-end rounded-xl p-3 transition-all"
+              className="flex gap-2 items-end rounded-xl p-2.5 sm:p-3 transition-all w-full"
               style={{ border: "1px solid var(--line-strong)", background: "var(--surface-raised)" }}
               onFocusCapture={(e) => (e.currentTarget as HTMLElement).style.borderColor = "rgba(79,70,229,0.4)"}
               onBlurCapture={(e) => (e.currentTarget as HTMLElement).style.borderColor = "var(--line-strong)"}
@@ -550,7 +550,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask your AI consultant anything..."
-                className="flex-1 bg-transparent border-0 focus:ring-0 resize-none min-h-[44px] max-h-[200px] p-0 text-sm"
+                className="flex-1 min-w-0 bg-transparent border-0 focus:ring-0 resize-none min-h-[44px] max-h-[200px] p-0 text-sm"
                 rows={1}
                 disabled={streaming}
               />
@@ -558,12 +558,12 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
                 onClick={() => sendMessage()}
                 disabled={!input.trim() || streaming}
                 size="icon"
-                className="flex-shrink-0"
+                className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10"
               >
                 {streaming ? <Spinner size="sm" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
-            <p className="text-xs text-center mt-2" style={{ color: "var(--subtle-fg)" }}>
+            <p className="text-xs text-center mt-1.5 hidden sm:block" style={{ color: "var(--subtle-fg)" }}>
               Enter to send · Shift+Enter for new line
             </p>
           </div>
