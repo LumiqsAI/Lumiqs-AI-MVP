@@ -150,6 +150,13 @@ body {
 .app-shell {
   background: var(--page-bg);
   color: var(--page-fg);
+  overflow-x: hidden;
+}
+
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* ── Theme toggle ─────────────────────────────────────────────── */

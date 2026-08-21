@@ -57,12 +57,12 @@ export default function MarketResearchPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-white">Market Research</h1>
           <p className="text-slate-400 mt-1">Industry overview, customer personas, trends, and opportunities.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <ReportHistory businessId={businessId} type="MARKET_RESEARCH" activeReportId={report?.id} onSelect={selectReport} />
           {report && <Link href={`/reports/${report.id}`}><Button variant="outline">View Report</Button></Link>}
           <Button onClick={generate} loading={loading}><Globe className="h-4 w-4" />{report ? "Regenerate" : "Generate Research"}</Button>

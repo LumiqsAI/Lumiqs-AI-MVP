@@ -92,7 +92,7 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
-      <div className="mb-8 flex items-start justify-between gap-4">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1">
           <h1 className="text-2xl font-semibold" style={{ color: "var(--page-fg)" }}>Competitor Analysis</h1>
           <p className="mt-1 text-sm" style={{ color: "var(--muted-fg)" }}>Analyze competitors and identify strategic advantages.</p>
@@ -102,9 +102,9 @@ export default function CompetitorsPage({ params }: { params: Promise<{ id: stri
 
       <Card className="mb-6">
         <CardContent className="pt-5">
-          <div className="flex gap-3">
-            <Input placeholder="Competitor name (e.g. Notion, Stripe)" value={name} onChange={(e) => setName(e.target.value)} className="flex-1" />
-            <Input placeholder="Website (optional)" value={website} onChange={(e) => setWebsite(e.target.value)} className="flex-1" />
+        <div className="flex flex-wrap gap-3">
+            <Input placeholder="Competitor name (e.g. Notion, Stripe)" value={name} onChange={(e) => setName(e.target.value)} className="flex-1 min-w-[160px]" />
+            <Input placeholder="Website (optional)" value={website} onChange={(e) => setWebsite(e.target.value)} className="flex-1 min-w-[160px]" />
             <Button onClick={analyze} loading={loading}><Plus className="h-4 w-4" />Analyze</Button>
           </div>
         </CardContent>

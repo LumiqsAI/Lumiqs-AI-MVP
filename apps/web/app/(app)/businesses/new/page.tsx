@@ -67,9 +67,9 @@ export default function NewBusinessPage() {
 
   function handleReview(e: React.FormEvent) {
     e.preventDefault();
+    if (detailsMode === "discovery" && !profileConfirmed) { toast.error("Verify and confirm the public business profile before continuing"); return; }
     const missing = REQUIRED_PROFILE_FIELDS.find(([key]) => !form[key].trim());
     if (missing) { toast.error(`${missing[1]} is required`); return; }
-    if (detailsMode === "discovery" && !profileConfirmed) { toast.error("Confirm the public business profile before continuing"); return; }
     setStep("confirm");
   }
 
@@ -154,6 +154,18 @@ export default function NewBusinessPage() {
                     <label className="text-sm mb-1.5 block" style={{ color: "var(--muted-fg)" }}>Business Name *</label>
                     <Input placeholder="e.g. Lumiqs AI" value={form.name} onChange={(e) => { set("name", e.target.value); setProfileConfirmed(false); }} required />
                   </div>
+                  <div>
+                    <label className="text-sm mb-1.5 block" style={{ color: "var(--muted-fg)" }}>Website *</label>
+                    {detailsMode === "discovery" ? (
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Input type="url" placeholder="https://..." value={form.website} onChange={(e) => { set("website", e.target.value); setProfileConfirmed(false); }} required />
+                        <Button type="button" variant="outline" onClick={() => void verifyPublicProfile()} loading={discovering} className="shrink-0">Find profile</Button>
+                      </div>
+                    ) : (
+                      <Input type="url" placeholder="https://..." value={form.website} onChange={(e) => set("website", e.target.value)} required />
+                    )}
+                  </div>
+                  {(detailsMode === "manual" || profileConfirmed) && <>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <label className="text-sm mb-1.5 block" style={{ color: "var(--muted-fg)" }}>Industry *</label>
@@ -179,17 +191,7 @@ export default function NewBusinessPage() {
                       <Input placeholder="e.g. 1-5, 10-50" value={form.teamSize} onChange={(e) => set("teamSize", e.target.value)} required />
                     </div>
                   </div>
-                  <div>
-                    <label className="text-sm mb-1.5 block" style={{ color: "var(--muted-fg)" }}>Website *</label>
-                    {detailsMode === "discovery" ? (
-                      <div className="flex flex-col gap-2 sm:flex-row">
-                        <Input type="url" placeholder="https://..." value={form.website} onChange={(e) => { set("website", e.target.value); setProfileConfirmed(false); }} required />
-                        <Button type="button" variant="outline" onClick={() => void verifyPublicProfile()} loading={discovering} className="shrink-0">Verify profile</Button>
-                      </div>
-                    ) : (
-                      <Input type="url" placeholder="https://..." value={form.website} onChange={(e) => set("website", e.target.value)} required />
-                    )}
-                  </div>
+                  </>}
                   {detailsMode === "discovery" && discovery && (
                     <div className="rounded-xl p-4" style={{ border: "1px solid var(--line-strong)", background: "var(--surface)" }}>
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -211,13 +213,18 @@ export default function NewBusinessPage() {
                       {discovery.searchResults.items?.map((item) => <a key={item.url} href={item.url} target="_blank" rel="noreferrer" className="mt-2 block text-xs underline" style={{ color: "var(--accent)" }}>{item.title || item.url}</a>)}
                       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-xs" style={{ color: "var(--muted-fg)" }}>Is this your business and are these public details correct?</p>
-                        <Button type="button" size="sm" onClick={() => { setProfileConfirmed(true); toast.success("Public profile confirmed"); }}>Yes, this is my business</Button>
+                        <Button type="button" size="sm" onClick={() => {
+                          if (!form.description.trim() && discovery.site.description) set("description", discovery.site.description);
+                          setProfileConfirmed(true);
+                          toast.success("Public profile confirmed. Review the prefilled details below.");
+                        }}>Yes, this is my business</Button>
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
+              {(detailsMode === "manual" || profileConfirmed) && <>
               <Card>
                 <CardHeader><CardTitle>Business Context</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
@@ -250,6 +257,7 @@ export default function NewBusinessPage() {
                 </Button>
                 <Button type="button" variant="outline" size="lg" onClick={() => router.back()}>Cancel</Button>
               </div>
+              </>}
             </form>
           </motion.div>
         ) : (

@@ -86,7 +86,7 @@ export default function ScenariosPage({ params }: { params: Promise<{ id: string
 
   return (
     <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
-      <div className="mb-8 flex items-start justify-between gap-4">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold" style={{ color: "var(--page-fg)" }}>Scenario Comparison</h1>
           <p className="mt-1 text-sm" style={{ color: "var(--muted-fg)" }}>

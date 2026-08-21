@@ -59,12 +59,12 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-white">Business Analysis</h1>
           <p className="text-slate-400 mt-1">AI-powered SWOT analysis and strategic recommendations.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <ReportHistory businessId={businessId} type="BUSINESS_ANALYSIS" activeReportId={report?.id} onSelect={selectReport} />
           {report && (
             <Link href={`/reports/${report.id}`}>

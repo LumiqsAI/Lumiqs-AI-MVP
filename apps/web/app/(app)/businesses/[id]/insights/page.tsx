@@ -65,7 +65,7 @@ export default function InsightsPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="w-full max-w-[1440px] p-4 sm:p-6 lg:p-8 xl:mx-0 2xl:mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-white">Saved Insights</h1>
           <p className="text-slate-400 mt-1">Key learnings and recommendations saved from AI conversations.</p>

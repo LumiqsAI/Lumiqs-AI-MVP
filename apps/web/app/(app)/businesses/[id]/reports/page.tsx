@@ -92,7 +92,7 @@ export default function ReportsPage({ params }: { params: Promise<{ id: string }
           {reports.map((r, i) => (
             <motion.div key={r.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
               <Card className="hover:border-white/15 transition-colors">
-                <CardContent className="p-4 flex items-center gap-4">
+                <CardContent className="p-4 flex flex-wrap items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-indigo-600/20 flex items-center justify-center flex-shrink-0">
                     <FileText className="h-5 w-5 text-indigo-400" />
                   </div>
