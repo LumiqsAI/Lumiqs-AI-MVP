@@ -18,8 +18,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
-      <html lang="en" data-theme="light" suppressHydrationWarning>
+    <ClerkProvider
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
+    >
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){var t=localStorage.getItem('lumiqs-theme');document.documentElement.dataset.theme=t==='dark'?'dark':'light';})()`
+            }}
+          />
+        </head>
         <body className="font-sans antialiased">
           <ThemeProvider>
             {children}

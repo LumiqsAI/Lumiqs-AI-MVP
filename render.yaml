@@ -47,6 +47,10 @@ services:
         sync: false
       - key: RAZORPAY_WEBHOOK_SECRET
         sync: false
+      - key: GOOGLE_SEARCH_API_KEY
+        sync: false
+      - key: GOOGLE_SEARCH_ENGINE_ID
+        sync: false
       - key: CORS_ORIGIN
         value: https://lumiqs.in,https://www.lumiqs.in
       - key: THROTTLE_TTL
