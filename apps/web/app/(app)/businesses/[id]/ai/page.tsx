@@ -560,7 +560,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
                 placeholder="Ask your AI consultant anything..."
                 rows={1}
                 disabled={streaming}
-                className="flex-1 min-w-0 w-full !h-auto !min-h-[44px] !max-h-[200px] bg-transparent border-0 outline-none focus:outline-none focus:ring-0 resize-none px-0 py-2.5 text-sm leading-5 overflow-y-auto"
+                className="flex-1 min-w-0 w-full !h-auto !min-h-[44px] !max-h-[200px] bg-transparent border-0 outline-none focus:outline-none focus:ring-0 resize-none pl-4 pr-0 py-2.5 text-sm leading-5 overflow-y-auto"
               />
 
               <Button
