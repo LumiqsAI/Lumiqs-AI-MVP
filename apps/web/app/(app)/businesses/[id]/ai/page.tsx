@@ -531,7 +531,6 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
 
           <div ref={messagesEndRef} />
         </div>
-
         {/* ── Input area ── */}
         <div
           className="px-3 py-3 sm:px-6 sm:py-4 flex-shrink-0"
@@ -540,22 +539,30 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
           <div className="max-w-3xl mx-auto w-full">
             <div
               className="flex gap-2 items-end rounded-xl p-2.5 sm:p-3 transition-all w-full"
-              style={{ border: "1px solid var(--line-strong)", background: "var(--surface-raised)" }}
-              onFocusCapture={(e) => (e.currentTarget as HTMLElement).style.borderColor = "rgba(79,70,229,0.4)"}
-              onBlurCapture={(e) => (e.currentTarget as HTMLElement).style.borderColor = "var(--line-strong)"}
+              style={{
+                border: "1px solid var(--line-strong)",
+                background: "var(--surface-raised)",
+              }}
+              onFocusCapture={(e) =>
+                (e.currentTarget as HTMLElement).style.borderColor =
+                "rgba(79,70,229,0.4)"
+              }
+              onBlurCapture={(e) =>
+                (e.currentTarget as HTMLElement).style.borderColor =
+                "var(--line-strong)"
+              }
             >
-              <div className="flex items-end gap-2 px-4 py-2">
-                <Textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask your AI consultant anything..."
-                  rows={1}
-                  disabled={streaming}
-                  className="flex-1 min-w-0 w-full bg-transparent border-0 focus:border-0 focus:ring-0 focus:outline-none resize-none min-h-[44px] max-h-[200px] px-0 py-3 text-sm leading-5 overflow-y-auto"
-                />
-              </div>
+              <Textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask your AI consultant anything..."
+                rows={1}
+                disabled={streaming}
+                className="flex-1 min-w-0 bg-transparent border-0 focus:ring-0 focus:outline-none resize-none min-h-[44px] max-h-[200px] p-0 text-sm"
+              />
+
               <Button
                 onClick={() => sendMessage()}
                 disabled={!input.trim() || streaming}
@@ -565,7 +572,11 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
                 {streaming ? <Spinner size="sm" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
-            <p className="text-xs text-center mt-1.5 hidden sm:block" style={{ color: "var(--subtle-fg)" }}>
+
+            <p
+              className="text-xs text-center mt-1.5 hidden sm:block"
+              style={{ color: "var(--subtle-fg)" }}
+            >
               Enter to send · Shift+Enter for new line
             </p>
           </div>
