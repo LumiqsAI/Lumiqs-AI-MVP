@@ -544,16 +544,18 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
               onFocusCapture={(e) => (e.currentTarget as HTMLElement).style.borderColor = "rgba(79,70,229,0.4)"}
               onBlurCapture={(e) => (e.currentTarget as HTMLElement).style.borderColor = "var(--line-strong)"}
             >
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask your AI consultant anything..."
-                className="flex-1 min-w-0 bg-transparent border-0 focus:ring-0 resize-none min-h-[44px] max-h-[200px] p-0 text-sm"
-                rows={1}
-                disabled={streaming}
-              />
+              <div className="flex items-end gap-2 px-4 py-2">
+                <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask your AI consultant anything..."
+                  rows={1}
+                  disabled={streaming}
+                  className="flex-1 min-w-0 w-full bg-transparent border-0 focus:border-0 focus:ring-0 focus:outline-none resize-none min-h-[44px] max-h-[200px] px-0 py-3 text-sm leading-5 overflow-y-auto"
+                />
+              </div>
               <Button
                 onClick={() => sendMessage()}
                 disabled={!input.trim() || streaming}
