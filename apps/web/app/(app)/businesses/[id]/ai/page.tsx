@@ -28,6 +28,29 @@ const SUGGESTED_PROMPTS = [
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 const API_URL = `${BASE}/api/v1`;
 
+async function getChatRequestError(response: Response): Promise<string> {
+  let message = "";
+
+  try {
+    const payload = await response.json();
+    message = payload?.error?.message || payload?.message || "";
+  } catch {
+    // A proxy may return a non-JSON error page. Use the status-specific fallback below.
+  }
+
+  if (response.status === 429) {
+    return message || "Your chat limit is exhausted. Please try again later or upgrade your plan.";
+  }
+
+  if (message) return message;
+
+  if (response.status === 503) {
+    return "The AI service is temporarily unavailable. Please try again shortly.";
+  }
+
+  return "We could not send your message. Please try again.";
+}
+
 export default function AIPage({ params }: { params: Promise<{ id: string }> }) {
   const [businessId, setBusinessId] = useState<string>("");
   const searchParams = useSearchParams();
@@ -118,7 +141,7 @@ export default function AIPage({ params }: { params: Promise<{ id: string }> }) 
         body: JSON.stringify({ message, conversationId: activeConvId }),
       });
 
-      if (!res.ok) throw new Error("AI request failed");
+      if (!res.ok) throw new Error(await getChatRequestError(res));
 
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
